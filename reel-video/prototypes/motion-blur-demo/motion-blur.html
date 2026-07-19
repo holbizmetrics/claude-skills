@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>reel-video.skill — motion_blur hand-coded reference (DESIGN.md item 14)</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #222;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .frame-wrapper {
+    position: fixed; inset: 0;
+    display: flex; justify-content: center; align-items: center;
+  }
+  .frame {
+    width: 1080px; height: 1920px;
+    background: #faf8f3;
+    background-image:
+      linear-gradient(rgba(160, 145, 110, 0.18) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(160, 145, 110, 0.18) 1px, transparent 1px);
+    background-size: 48px 48px;
+    position: relative;
+    overflow: hidden;
+    transform-origin: center center;
+    /* transform set by inline script below; CSS scale() can't reliably
+       coerce length-to-number across browsers. */
+    box-shadow: 0 0 40px rgba(0,0,0,0.4);
+  }
+
+  .title {
+    position: absolute;
+    top: 100px; left: 0; right: 0;
+    text-align: center;
+    font-size: 56px;
+    font-weight: 700;
+    color: #1a1a1a;
+    letter-spacing: -1.5px;
+  }
+  .subtitle {
+    position: absolute;
+    top: 180px; left: 0; right: 0;
+    text-align: center;
+    font-size: 28px;
+    color: #5a5a5a;
+    font-weight: 400;
+  }
+
+  /* Icons — 2x2 grid centered. Resting positions stored in data-tx/data-ty
+     so the interpreter can read them in the grammar version. */
+  .icon {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 280px; height: 280px;
+    border-radius: 32px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: #faf8f3;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    will-change: transform, filter, opacity;
+  }
+  .icon .glyph {
+    font-size: 96px;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .icon .label {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    opacity: 0.95;
+  }
+  .icon .form {
+    font-size: 16px;
+    font-weight: 400;
+    opacity: 0.75;
+    margin-top: 4px;
+    font-family: "Consolas", "Courier New", monospace;
+  }
+
+  /* Caption + replay */
+  .caption {
+    position: absolute;
+    bottom: 200px; left: 0; right: 0;
+    text-align: center;
+    font-size: 32px;
+    color: #1a1a1a;
+    font-weight: 500;
+    padding: 0 80px;
+  }
+  .replay {
+    position: absolute;
+    bottom: 100px; left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a1a; color: #faf8f3;
+    border: none; border-radius: 999px;
+    padding: 18px 44px;
+    font-size: 22px; font-weight: 600;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div class="frame-wrapper">
+  <div class="frame">
+    <div class="title">motion_blur</div>
+    <div class="subtitle">DESIGN.md item 14 — hand-coded reference</div>
+
+    <!-- Resting positions: 2x2 grid centered around frame center.
+         Frame is 1080x1920, center at (540, 960). Origin (0,0) at center
+         since icons use top:50%/left:50% + xPercent/yPercent -50 transforms.
+         Grid step: 200 horizontal, 200 vertical. -->
+    <div class="icon" id="icon-1" data-tx="-200" data-ty="-220" style="background:#5b8def;">
+      <div class="glyph">&#x2193;</div>
+      <div class="label">from top</div>
+      <div class="form">motion_blur: false</div>
+    </div>
+    <div class="icon" id="icon-2" data-tx="200"  data-ty="-220" style="background:#e85a4f;">
+      <div class="glyph">&#x2190;</div>
+      <div class="label">from right</div>
+      <div class="form">motion_blur: true</div>
+    </div>
+    <div class="icon" id="icon-3" data-tx="-200" data-ty="220"  style="background:#48a675;">
+      <div class="glyph">&#x2192;</div>
+      <div class="label">from left</div>
+      <div class="form">motion_blur: 12</div>
+    </div>
+    <div class="icon" id="icon-4" data-tx="200"  data-ty="220"  style="background:#b066d6;">
+      <div class="glyph">&#x2191;</div>
+      <div class="label">from bottom</div>
+      <div class="form">{ px:16, decay:false }</div>
+    </div>
+
+    <div class="caption" id="captions">Each icon flies in with a different motion_blur form.</div>
+    <button class="replay" id="replay">Replay</button>
+  </div>
+</div>
+
+<script>
+// Fit-frame helper — sets .frame's transform: scale() based on viewport.
+(function () {
+  const frame = document.querySelector('.frame');
+  if (!frame) return;
+  const apply = () => {
+    const s = Math.min(window.innerWidth / 1080, window.innerHeight / 1920);
+    frame.style.transform = 'scale(' + s + ')';
+  };
+  apply();
+  window.addEventListener('resize', apply);
+})();
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+(function () {
+  // Hand-coded reference for the motion_blur structural axis.
+  // Four PLACE-with-from entrances cover all four schema forms.
+  // Same animation must be reproducible from motion-blur.yaml via
+  // gesture-interpreter.js (see motion-blur-grammar.html).
+
+  const FLY = 1.0;          // transit duration per icon
+  const STAGGER = 0.8;      // gap between successive entrances
+  const T0 = 0.2;           // first icon's start delay
+
+  // Each entry: [selector, fromOffset, motionBlurResolved]
+  // motionBlurResolved is the post-resolution shape: { px, decay } or null.
+  const PLAN = [
+    ['#icon-1', { x: 0,    y: -1400 }, null],                    // false → no blur
+    ['#icon-2', { x: 1400, y: 0     }, { px: 8,  decay: true  }],// true → 8/decay
+    ['#icon-3', { x: -1400,y: 0     }, { px: 12, decay: true  }],// integer → 12/decay
+    ['#icon-4', { x: 0,    y: 1400  }, { px: 16, decay: false }],// hold-then-snap
+  ];
+
+  function resetState() {
+    document.querySelectorAll('.icon').forEach((el) => {
+      const tx = parseFloat(el.dataset.tx);
+      const ty = parseFloat(el.dataset.ty);
+      gsap.set(el, {
+        xPercent: -50, yPercent: -50,
+        x: tx, y: ty,
+        opacity: 0,
+        filter: 'blur(0px)'
+      });
+    });
+    gsap.set('#replay', { opacity: 0 });
+  }
+
+  function applyMotionBlur(tl, sel, offset, mb, duration) {
+    if (!mb) return;  // false / null → no-op
+    if (mb.decay) {
+      // 0 → px → 0 across the transit
+      const half = duration / 2;
+      tl.fromTo(sel,
+        { filter: 'blur(0px)' },
+        { filter: `blur(${mb.px}px)`, duration: half, ease: 'power1.in' },
+        offset);
+      tl.to(sel,
+        { filter: 'blur(0px)', duration: half, ease: 'power1.out' },
+        offset + half);
+    } else {
+      // hold px through transit, snap to 0 at end
+      tl.set(sel, { filter: `blur(${mb.px}px)` }, offset);
+      tl.to(sel, { opacity: 1 }, offset);   // ensure GSAP records the offset frame
+      tl.set(sel, { filter: 'blur(0px)' }, offset + duration);
+    }
+  }
+
+  function build() {
+    resetState();
+    const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
+
+    PLAN.forEach((entry, i) => {
+      const [sel, fromOff, mb] = entry;
+      const el = document.querySelector(sel);
+      const tx = parseFloat(el.dataset.tx);
+      const ty = parseFloat(el.dataset.ty);
+      const start = T0 + i * STAGGER;
+
+      // Pre-position at offset
+      tl.set(sel, {
+        x: tx + fromOff.x,
+        y: ty + fromOff.y,
+        opacity: 1
+      }, start);
+
+      // Travel to resting position
+      tl.to(sel, {
+        x: tx, y: ty,
+        duration: FLY,
+        ease: 'power2.out'
+      }, start);
+
+      // Motion-blur layered on top, same offset + duration
+      applyMotionBlur(tl, sel, start, mb, FLY);
+    });
+
+    // Replay button at end
+    const lastEnd = T0 + (PLAN.length - 1) * STAGGER + FLY;
+    tl.to('#replay', { opacity: 1, duration: 0.4 }, lastEnd + 0.4);
+  }
+
+  build();
+  document.querySelector('#replay').addEventListener('click', build);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<svg viewBox="0 0 520 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Generic note-app window mockup">
+  <defs>
+    <linearGradient id="titlebar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ece5d4"/>
+      <stop offset="100%" stop-color="#d8d0bb"/>
+    </linearGradient>
+    <filter id="winShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="6"/>
+      <feOffset dx="0" dy="8" result="off"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.45"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <g filter="url(#winShadow)">
+    <!-- Window shell -->
+    <rect x="2" y="2" width="516" height="356" rx="6" fill="#fbf8ef" stroke="#a89e85" stroke-width="1"/>
+
+    <!-- Title bar -->
+    <path d="M 2 8 a 6 6 0 0 1 6 -6 H 512 a 6 6 0 0 1 6 6 V 32 H 2 Z" fill="url(#titlebar)" stroke="#a89e85" stroke-width="1"/>
+
+    <!-- Title bar text -->
+    <text x="16" y="22" font-family="-apple-system, system-ui" font-size="12" fill="#2a2a2a">Simple Note Editor</text>
+
+    <!-- Window controls (Windows-style) -->
+    <g font-family="-apple-system, system-ui" font-size="12" fill="#666">
+      <text x="466" y="22">—</text>
+      <text x="486" y="22">▢</text>
+      <rect x="498" y="6" width="20" height="22" fill="#d75a3c" rx="0"/>
+      <text x="503" y="22" fill="white">✕</text>
+    </g>
+
+    <!-- Menu bar -->
+    <rect x="2" y="32" width="516" height="22" fill="#f4eedb" stroke="#a89e85" stroke-width="0.5"/>
+    <g font-family="-apple-system, system-ui" font-size="11" fill="#3a3a3a">
+      <text x="14" y="47">File</text>
+      <text x="42" y="47">Edit</text>
+      <text x="72" y="47">Help</text>
+    </g>
+
+    <!-- Title input field -->
+    <rect x="14" y="66" width="490" height="26" fill="white" stroke="#b5ad95" stroke-width="1" rx="2"/>
+    <text x="22" y="83" font-family="-apple-system, system-ui" font-size="12" fill="#5a5a5a">Untitled Note</text>
+
+    <!-- Body content -->
+    <g font-family="-apple-system, system-ui" font-size="12" fill="#1a1a1a">
+      <text x="16" y="118">Date: May 4, 2026</text>
+      <text x="16" y="142">Today's plan:</text>
+      <text x="16" y="164">- Ship F6+F7 themed primitives</text>
+      <text x="16" y="184">- Verify mascot SVG renders cleanly</text>
+      <text x="16" y="204">- Document the PLACE+SVG pattern</text>
+      <text x="16" y="224">- Push to main</text>
+    </g>
+
+    <!-- A subtle blinking cursor visual cue (static here) -->
+    <rect x="180" y="214" width="1.5" height="14" fill="#1a1a1a"/>
+
+    <!-- Status bar -->
+    <rect x="2" y="332" width="516" height="26" fill="#ece5d4" stroke="#a89e85" stroke-width="0.5"/>
+    <g font-family="-apple-system, system-ui" font-size="10" fill="#666">
+      <text x="14" y="349">Ready</text>
+      <text x="450" y="349">Ln 5, Col 18</text>
+    </g>
+  </g>
+</svg>

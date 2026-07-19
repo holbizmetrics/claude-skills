@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>reel-video.skill — themed primitives preview (F6+F7)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    background: #1a1a1a;
+    color: #faf8f3;
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px;
+    gap: 24px;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.3px;
+  }
+  h1 small {
+    display: block;
+    font-size: 13px;
+    font-weight: 400;
+    color: #888;
+    margin-top: 4px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: 28px;
+    max-width: 1300px;
+    width: 100%;
+  }
+  .tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .label {
+    font-size: 14px;
+    font-family: "SF Mono", Consolas, monospace;
+    color: #ccc;
+  }
+  .label .pattern {
+    color: #888;
+    font-size: 12px;
+  }
+
+  .frame {
+    width: 320px;
+    height: 568px;
+    border-radius: 10px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Mascot reveal — dark-green canvas (matches OpenClaw frame 22 backdrop) */
+  .frame.mascot-scene {
+    background-color: #0d2818;
+    background-image: radial-gradient(ellipse at center, rgba(255,255,255,0.05) 0%, transparent 70%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .frame.mascot-scene .mascot {
+    width: 220px;
+    height: auto;
+    filter: drop-shadow(0 12px 24px rgba(0,0,0,0.5));
+    animation: mascotEntry 2.4s cubic-bezier(.34,1.56,.64,1) infinite;
+  }
+  @keyframes mascotEntry {
+    0%, 90%, 100% { transform: translateY(0) scale(1); filter: drop-shadow(0 12px 24px rgba(0,0,0,0.5)) blur(0px); }
+    35% { transform: translateY(-12px) scale(1.04); }
+    /* arrival blur as it lands */
+    8% { transform: translateY(-30px) scale(0.94); filter: drop-shadow(0 0 0 transparent) blur(6px); opacity: 0.7; }
+    18% { transform: translateY(-4px) scale(1); filter: drop-shadow(0 12px 24px rgba(0,0,0,0.5)) blur(0px); opacity: 1; }
+  }
+
+  /* Window mockup — same dark-green canvas, window appears mid-screen */
+  .frame.window-scene {
+    background-color: #0d2818;
+    background-image: radial-gradient(ellipse at center, rgba(255,255,255,0.05) 0%, transparent 70%);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 40px;
+  }
+  .frame.window-scene .window {
+    width: 280px;
+    height: auto;
+    filter: drop-shadow(0 16px 32px rgba(0,0,0,0.6));
+    animation: windowSlideUp 3s cubic-bezier(.22,.61,.36,1) infinite;
+  }
+  @keyframes windowSlideUp {
+    0%, 80%, 100% { transform: translateY(0); opacity: 1; }
+    5% { transform: translateY(120px); opacity: 0; }
+    18% { transform: translateY(0); opacity: 1; }
+  }
+
+  /* Combined scene — both primitives composed in one frame */
+  .frame.combined-scene {
+    background-color: #0d2818;
+    background-image: radial-gradient(ellipse at center, rgba(255,255,255,0.04) 0%, transparent 70%);
+    position: relative;
+  }
+  .frame.combined-scene .mascot {
+    width: 180px;
+    position: absolute;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    filter: drop-shadow(0 8px 16px rgba(0,0,0,0.5));
+  }
+  .frame.combined-scene .window {
+    width: 280px;
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    filter: drop-shadow(0 12px 24px rgba(0,0,0,0.6));
+  }
+
+  footer {
+    margin-top: 16px;
+    font-size: 12px;
+    color: #666;
+    max-width: 800px;
+    text-align: center;
+    line-height: 1.55;
+  }
+  footer code { color: #999; }
+</style>
+</head>
+<body>
+
+<h1>
+  reel-video.skill — themed primitives preview
+  <small>F6+F7 (mascot + fake-window) shipped via the PLACE + custom-SVG pattern. No grammar change required.</small>
+</h1>
+
+<div class="grid">
+  <div class="tile">
+    <div class="frame mascot-scene">
+      <object class="mascot" type="image/svg+xml" data="mascot.svg"></object>
+    </div>
+    <div class="label">
+      mascot.svg
+      <div class="pattern">PLACE { element: mascot, position: center, entry: morph-blur }</div>
+    </div>
+  </div>
+
+  <div class="tile">
+    <div class="frame window-scene">
+      <object class="window" type="image/svg+xml" data="fake-window.svg"></object>
+    </div>
+    <div class="label">
+      fake-window.svg
+      <div class="pattern">PLACE { element: fake_window, position: bottom, entry: slide-up }</div>
+    </div>
+  </div>
+
+  <div class="tile">
+    <div class="frame combined-scene">
+      <object class="mascot" type="image/svg+xml" data="mascot.svg"></object>
+      <object class="window" type="image/svg+xml" data="fake-window.svg"></object>
+    </div>
+    <div class="label">
+      composed scene
+      <div class="pattern">two PLACE calls (matches OpenClaw frame 22)</div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Each themed primitive is one inline-positioned SVG dropped into the scene via <code>PLACE { element: &lt;svg-id&gt;, position: ... }</code>. No new gesture, no new stage, no schema change — the existing PLACE machinery accepts arbitrary element ids whose markup is supplied via an <code>asset:</code> map at the top of the YAML (or per-scene). Promote to first-class stage only when authoring repeatedly needs the same primitive.
+  <br><br>
+  The composed scene is the structural pattern from OpenClaw frame 22: mascot above + product-window-mockup below on dark-green canvas.
+</footer>
+
+</body>
+</html>

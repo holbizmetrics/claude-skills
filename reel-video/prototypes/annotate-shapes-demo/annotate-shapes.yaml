@@ -1,0 +1,52 @@
+title: "ANNOTATE shapes — DESIGN.md item 11b grammar test"
+# Mirrors annotate-shapes.html. Four icons in a 2x2 grid, each gets a
+# different ANNOTATE shape kind (bracket / ellipse / elbow-arrow /
+# underline) — point-attached, single id target, item 11b coverage.
+
+scenes:
+  - id: scene-1
+    duration: 5.5
+    overlays:
+      # Icons reveal staggered
+      - { gesture: PLACE, element: icon-1, delay: 0.2, duration: 0.5, easing: power2.out }
+      - { gesture: PLACE, element: icon-2, delay: 0.4, duration: 0.5, easing: power2.out }
+      - { gesture: PLACE, element: icon-3, delay: 0.6, duration: 0.5, easing: power2.out }
+      - { gesture: PLACE, element: icon-4, delay: 0.8, duration: 0.5, easing: power2.out }
+
+      # (1) Bracket above icon-1 (single-id target with kind: bracket)
+      - gesture: ANNOTATE
+        target: icon-1
+        kind: bracket
+        label: above
+        delay: 1.5
+        duration: 0.7
+        easing: power2.out
+
+      # (2) Ellipse around icon-2
+      - gesture: ANNOTATE
+        target: icon-2
+        kind: ellipse
+        label: around
+        delay: 2.5
+        duration: 0.7
+        easing: power2.out
+
+      # (3) Elbow-arrow callout on icon-3, label up-and-right
+      - gesture: ANNOTATE
+        target: icon-3
+        kind: elbow-arrow
+        label: callout
+        options:
+          labelOffset: { x: 340, y: -300 }
+        delay: 3.5
+        duration: 0.7
+        easing: power2.out
+
+      # (4) Underline below icon-4
+      - gesture: ANNOTATE
+        target: icon-4
+        kind: underline
+        label: below
+        delay: 4.5
+        duration: 0.7
+        easing: power2.out

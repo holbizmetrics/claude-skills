@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>reel-video.skill — ANNOTATE shapes grammar version (validates YAML→GSAP)</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0; background: #222; overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .frame-wrapper {
+    position: fixed; inset: 0;
+    display: flex; justify-content: center; align-items: center;
+  }
+  .frame {
+    width: 1080px; height: 1920px;
+    background: #faf8f3;
+    background-image:
+      linear-gradient(rgba(160, 145, 110, 0.18) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(160, 145, 110, 0.18) 1px, transparent 1px);
+    background-size: 48px 48px;
+    position: relative; overflow: hidden;
+    transform-origin: center center;
+    box-shadow: 0 0 40px rgba(0,0,0,0.4);
+  }
+  .title {
+    position: absolute;
+    top: 70px; left: 0; right: 0;
+    text-align: center;
+    font-size: 56px; font-weight: 700;
+    color: #1a1a1a; letter-spacing: -1.5px;
+  }
+  .subtitle {
+    position: absolute;
+    top: 150px; left: 0; right: 0;
+    text-align: center;
+    font-size: 26px; color: #5a5a5a;
+    font-weight: 400;
+  }
+  .icon {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 280px; height: 280px;
+    border-radius: 36px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: #faf8f3; text-align: center;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  }
+  .icon .glyph { font-size: 88px; line-height: 1; margin-bottom: 8px; }
+  .icon .label { font-size: 22px; font-weight: 600; letter-spacing: 0.4px; }
+
+  .caption {
+    position: absolute;
+    bottom: 180px; left: 0; right: 0;
+    text-align: center;
+    font-size: 28px; color: #1a1a1a;
+    font-weight: 500; padding: 0 80px;
+  }
+  .replay {
+    position: absolute;
+    bottom: 90px; left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a1a; color: #faf8f3;
+    border: none; border-radius: 999px;
+    padding: 18px 44px;
+    font-size: 22px; font-weight: 600;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div class="frame-wrapper">
+  <div class="frame">
+    <div class="title">ANNOTATE shapes</div>
+    <div class="subtitle">DESIGN.md item 11b — grammar-driven (interpreter)</div>
+
+    <div class="icon" id="icon-1" data-tx="-200" data-ty="-300" style="background:#5b8def;">
+      <div class="glyph">[ ]</div>
+      <div class="label">bracket</div>
+    </div>
+    <div class="icon" id="icon-2" data-tx="200"  data-ty="-300" style="background:#48a675;">
+      <div class="glyph">◯</div>
+      <div class="label">ellipse</div>
+    </div>
+    <div class="icon" id="icon-3" data-tx="-200" data-ty="300"  style="background:#e85a4f;">
+      <div class="glyph">↳</div>
+      <div class="label">elbow-arrow</div>
+    </div>
+    <div class="icon" id="icon-4" data-tx="200"  data-ty="300"  style="background:#b066d6;">
+      <div class="glyph">_</div>
+      <div class="label">underline</div>
+    </div>
+
+    <div class="caption">Four shape kinds — bracket, ellipse, elbow-arrow, underline.</div>
+    <button class="replay" id="replay">Replay</button>
+  </div>
+</div>
+
+<script id="script-yaml" type="text/yaml">
+title: "ANNOTATE shapes — DESIGN.md item 11b grammar test"
+
+scenes:
+  - id: scene-1
+    duration: 5.5
+    overlays:
+      - { gesture: PLACE, element: icon-1, delay: 0.2, duration: 0.5, easing: power2.out }
+      - { gesture: PLACE, element: icon-2, delay: 0.4, duration: 0.5, easing: power2.out }
+      - { gesture: PLACE, element: icon-3, delay: 0.6, duration: 0.5, easing: power2.out }
+      - { gesture: PLACE, element: icon-4, delay: 0.8, duration: 0.5, easing: power2.out }
+
+      - gesture: ANNOTATE
+        target: icon-1
+        kind: bracket
+        label: above
+        delay: 1.5
+        duration: 0.7
+        easing: power2.out
+
+      - gesture: ANNOTATE
+        target: icon-2
+        kind: ellipse
+        label: around
+        delay: 2.5
+        duration: 0.7
+        easing: power2.out
+
+      - gesture: ANNOTATE
+        target: icon-3
+        kind: elbow-arrow
+        label: callout
+        options:
+          labelOffset: { x: 340, y: -300 }
+        delay: 3.5
+        duration: 0.7
+        easing: power2.out
+
+      - gesture: ANNOTATE
+        target: icon-4
+        kind: underline
+        label: below
+        delay: 4.5
+        duration: 0.7
+        easing: power2.out
+</script>
+
+<script>
+// Fit-frame helper — sets .frame's transform: scale() based on viewport.
+(function () {
+  const frame = document.querySelector('.frame');
+  if (!frame) return;
+  const apply = () => {
+    const s = Math.min(window.innerWidth / 1080, window.innerHeight / 1920);
+    frame.style.transform = 'scale(' + s + ')';
+  };
+  apply();
+  window.addEventListener('resize', apply);
+})();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+<script src="../gesture-interpreter.js"></script>
+<script>
+  const yamlText = document.querySelector('#script-yaml').textContent;
+  GestureInterpreter.run(yamlText);
+</script>
+</body>
+</html>

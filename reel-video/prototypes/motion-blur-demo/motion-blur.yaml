@@ -1,0 +1,44 @@
+title: "motion_blur — DESIGN.md item 14 grammar test"
+# Mirrors motion-blur.html. The grammar version (motion-blur-grammar.html)
+# loads this YAML through gesture-interpreter.js and must produce visually
+# identical output to the hand-coded reference.
+
+scenes:
+  - id: scene-1
+    duration: 4.5
+    overlays:
+      # Form 1: motion_blur: false (default) — no blur trail
+      - gesture: PLACE
+        element: icon-1
+        from: { x: 0, y: -1400 }
+        motion_blur: false
+        duration: 1.0
+        delay: 0.2
+        easing: power2.out
+
+      # Form 2: motion_blur: true — default 8 px, decays 0 → px → 0
+      - gesture: PLACE
+        element: icon-2
+        from: { x: 1400, y: 0 }
+        motion_blur: true
+        duration: 1.0
+        delay: 1.0
+        easing: power2.out
+
+      # Form 3: integer — explicit px, decay defaults true
+      - gesture: PLACE
+        element: icon-3
+        from: { x: -1400, y: 0 }
+        motion_blur: 12
+        duration: 1.0
+        delay: 1.8
+        easing: power2.out
+
+      # Form 4: object with decay:false — hold blur through transit, snap at end
+      - gesture: PLACE
+        element: icon-4
+        from: { x: 0, y: 1400 }
+        motion_blur: { px: 16, decay: false }
+        duration: 1.0
+        delay: 2.6
+        easing: power2.out

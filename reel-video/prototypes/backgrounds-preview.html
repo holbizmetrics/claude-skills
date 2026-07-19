@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>reel-video.skill — background enum preview (F5)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    background: #1a1a1a;
+    color: #faf8f3;
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px;
+    gap: 24px;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.3px;
+  }
+  h1 small {
+    display: block;
+    font-size: 13px;
+    font-weight: 400;
+    color: #888;
+    margin-top: 4px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+    max-width: 1400px;
+    width: 100%;
+  }
+  .tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .label {
+    font-size: 14px;
+    font-family: "SF Mono", Consolas, monospace;
+    color: #ccc;
+  }
+  .label .new {
+    background: #d97757;
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-left: 6px;
+    vertical-align: middle;
+    letter-spacing: 0.3px;
+  }
+  /* 9:16 mini-frame at 1/4 the spec resolution (270x480) for preview */
+  .frame {
+    width: 270px;
+    height: 480px;
+    border-radius: 8px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* === BACKGROUND ENUM IMPLEMENTATIONS === */
+
+  /* grid-paper (existing default) */
+  .bg-grid-paper {
+    background-color: #faf8f3;
+    background-image:
+      linear-gradient(rgba(160, 145, 110, 0.18) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(160, 145, 110, 0.18) 1px, transparent 1px);
+    background-size: 12px 12px;  /* scaled-down for preview tile */
+  }
+
+  /* lined-notebook (NEW — OpenClaw frames 7-8) */
+  .bg-lined-notebook {
+    background-color: #f5efe2;
+    background-image:
+      repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent 13px,
+        rgba(120, 100, 70, 0.42) 13px,
+        rgba(120, 100, 70, 0.42) 14px
+      ),
+      linear-gradient(
+        to right,
+        transparent 0,
+        transparent 22px,
+        rgba(196, 77, 77, 0.55) 22px,
+        rgba(196, 77, 77, 0.55) 23.5px,
+        transparent 23.5px
+      );
+  }
+
+  /* dark-green (NEW — OpenClaw frame 22, mascot/product reveal canvas) */
+  .bg-dark-green {
+    background-color: #0d2818;
+    background-image: radial-gradient(
+      ellipse at center,
+      rgba(255, 255, 255, 0.04) 0%,
+      transparent 70%
+    );
+  }
+
+  /* plain (existing — no pattern, just clean) */
+  .bg-plain {
+    background-color: #faf8f3;
+  }
+
+  /* gradient (existing) */
+  .bg-gradient {
+    background: linear-gradient(180deg, #faf8f3 0%, #e8e2d3 100%);
+  }
+
+  /* none (transparent — checkerboard guide for the preview only) */
+  .bg-none {
+    background-image:
+      linear-gradient(45deg, #444 25%, transparent 25%),
+      linear-gradient(-45deg, #444 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #444 75%),
+      linear-gradient(-45deg, transparent 75%, #444 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+    background-color: #2a2a2a;
+  }
+
+  /* Optional centered glyph in each tile to show how content sits on bg */
+  .glyph {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    font-family: Georgia, serif;
+    color: rgba(0,0,0,0.55);
+    user-select: none;
+  }
+  .bg-dark-green .glyph { color: rgba(255,255,255,0.7); }
+
+  footer {
+    margin-top: 16px;
+    font-size: 12px;
+    color: #666;
+    max-width: 800px;
+    text-align: center;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<h1>
+  reel-video.skill — <code>background</code> enum preview
+  <small>F5 gap-closure (n=1 OpenClaw dissection, 2026-05-04). Tiles render at 270×480, 1/4 of spec 1080×1920.</small>
+</h1>
+
+<div class="grid">
+  <div class="tile">
+    <div class="frame bg-grid-paper"><div class="glyph">Aa</div></div>
+    <div class="label">grid-paper <span style="color:#666">(default)</span></div>
+  </div>
+  <div class="tile">
+    <div class="frame bg-lined-notebook"><div class="glyph">Aa</div></div>
+    <div class="label">lined-notebook <span class="new">NEW</span></div>
+  </div>
+  <div class="tile">
+    <div class="frame bg-dark-green"><div class="glyph">Aa</div></div>
+    <div class="label">dark-green <span class="new">NEW</span></div>
+  </div>
+  <div class="tile">
+    <div class="frame bg-plain"><div class="glyph">Aa</div></div>
+    <div class="label">plain</div>
+  </div>
+  <div class="tile">
+    <div class="frame bg-gradient"><div class="glyph">Aa</div></div>
+    <div class="label">gradient</div>
+  </div>
+  <div class="tile">
+    <div class="frame bg-none"><div class="glyph">Aa</div></div>
+    <div class="label">none <span style="color:#666">(transparent — preview shows checkerboard)</span></div>
+  </div>
+</div>
+
+<footer>
+  At spec scale (1080×1920) the lined-notebook horizontal rules sit ~56–60px apart with the red margin line at ~88–92px from the left. Scaled down 4× for these preview tiles.
+  <br><br>
+  When <code>build.py</code> lands, the YAML's <code>background:</code> value should map directly to a <code>.bg-&lt;value&gt;</code> class on the <code>.frame</code> root, which is the cheapest wire.
+</footer>
+
+</body>
+</html>

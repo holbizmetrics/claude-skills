@@ -1,0 +1,126 @@
+# announce.yaml — meta-reel about reel-video.skill itself.
+#
+# Authored 2026-05-06 by reading SKILL.md "Coverage today (v0.3)" as the
+# executable spec. Stays inside the wired-gesture set: PLACE / CONNECT /
+# ANNOTATE (legacy arrow kind) / camera (zoom-in/zoom-out/hold) /
+# transition_in (hold-from-previous, morph-from-previous) / chapter
+# highlighting / pause.
+#
+# Reuses the video-mock DOM stage (CRT + 5 icons + phone + notif-card +
+# annotation) — only narration, chapter labels, and content text differ.
+# This is honest dogfooding of the v0.3 invocation spec: the YAML drives
+# choreography on a pre-built DOM. Render via announce-grammar.html.
+
+title: "reel-video.skill — meta announce reel"
+voice: conversational
+format: vertical
+background: grid-paper
+
+chapter_nav:
+  items: [Pitch, Insight, Wire, Ship, Try, Next]
+
+scenes:
+  # Beat 1 — close-up on the spec (CRT shows "Authoring")
+  - id: pitch-close
+    stage: crt
+    chapter: Pitch
+    content: { type: text, slot: screen, value: "Authoring" }
+    camera:
+      start: zoom-in
+      end: hold
+      duration: 2.5
+    overlays:
+      - { gesture: PLACE, element: chapter_nav, at_sentence: 0 }
+    narration: "I built a Claude Skill that writes reel videos."
+
+  # Beat 2 — zoom out, frame the architectural insight
+  - id: insight-frame
+    stage: crt
+    chapter: Insight
+    transition_in: hold-from-previous
+    content: { type: text, slot: screen, value: "Authoring" }
+    camera:
+      start: hold
+      end: zoom-out
+      duration: 3.0
+    narration: "Containers are animated, content is real."
+
+  # Beat 3 — five wired gestures reveal in sequence with line-draws
+  - id: gestures-reveal
+    stage: crt
+    chapter: Wire
+    transition_in: hold-from-previous
+    content: { type: text, slot: screen, value: "Authoring" }
+    duration: 5.0
+    overlays:
+      - gesture: PLACE
+        elements: [icon-settings, icon-docs, icon-tree, icon-phone, icon-network]
+        reveal: per-step
+        stagger: 0.9
+        duration: 0.5
+        easing: back.out(1.8)
+      - gesture: CONNECT
+        from: stage
+        to: [icon-settings, icon-docs, icon-tree, icon-phone, icon-network]
+        stroke: dashoffset
+        reveal: per-step
+        stagger: 0.9
+        duration: 0.7
+        easing: power2.out
+    narration: "Five wired gestures, each one a verb you compose with."
+
+  # Beat 4 — hold the composition (silent beat to absorb the network)
+  - id: hold-composition
+    stage: crt
+    transition_in: hold-from-previous
+    pause: 1.2
+
+  # Beat 5 — ship it: morph CRT out, phone in
+  - id: ship-morph
+    stage: phone
+    chapter: Ship
+    transition_in: morph-from-previous
+    transition_duration: 1.5
+    content:
+      type: notification
+      slot: screen
+      sender: Claude
+      title: "Skill released"
+      body: "v0.3 — wired core ships. Roadmap tracked."
+      checkmark: true
+    duration: 1.5
+    narration: "Then I shipped it."
+
+  # Beat 6 — notification card materializes inside phone
+  - id: notif-show
+    stage: phone
+    transition_in: hold-from-previous
+    duration: 1.8
+    overlays:
+      - gesture: PLACE
+        element: notif-card
+        easing: back.out(1.5)
+        duration: 0.5
+        delay: 0.1
+    narration: "v0.3 dropped. Skool community first."
+
+  # Beat 7 — annotation: curved arrow + handwritten label
+  - id: annotation
+    stage: phone
+    chapter: Try
+    transition_in: hold-from-previous
+    duration: 2.2
+    overlays:
+      - gesture: ANNOTATE
+        target: notif-card
+        label: "real spec, not vaporware"
+        arrow: curved
+        duration: 0.6
+        easing: power2.out
+
+  # Beat 8 — final hold, "Next" chapter active (signals roadmap continues)
+  - id: final-hold
+    stage: phone
+    chapter: Next
+    transition_in: hold-from-previous
+    pause: 2.8

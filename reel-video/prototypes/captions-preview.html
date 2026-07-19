@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>reel-video.skill — caption-style preview (F9)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    background: #1a1a1a;
+    color: #faf8f3;
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px;
+    gap: 24px;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.3px;
+  }
+  h1 small {
+    display: block;
+    font-size: 13px;
+    font-weight: 400;
+    color: #888;
+    margin-top: 4px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 24px;
+    max-width: 1400px;
+    width: 100%;
+  }
+  .tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .label {
+    font-size: 14px;
+    font-family: "SF Mono", Consolas, monospace;
+    color: #ccc;
+  }
+
+  /* 9:16 mini-frame */
+  .frame {
+    width: 270px;
+    height: 480px;
+    border-radius: 8px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    position: relative;
+    overflow: hidden;
+    /* dark backdrop so light captions read */
+    background: linear-gradient(135deg, #2a3a4a 0%, #15202b 100%);
+  }
+  /* mock B-roll texture so captions don't sit on flat black */
+  .frame::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.06) 0%, transparent 60%),
+                      radial-gradient(circle at 70% 70%, rgba(255,255,255,0.04) 0%, transparent 50%);
+  }
+
+  /* Caption container — bottom-third by default */
+  .cap {
+    position: absolute;
+    left: 14px; right: 14px;
+    bottom: 60px;
+    text-align: center;
+    z-index: 10;
+    line-height: 1.15;
+    pointer-events: none;
+  }
+  .cap .word {
+    display: inline-block;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.55);
+    margin: 0 4px;
+  }
+  .cap .word.emph {
+    color: #ffe66d;
+  }
+
+  /* === Per-word rich-text emphasis (DESIGN.md item 12 part 1) =====
+     Object-form emphasis applies face/color/weight on top of the
+     active style's base behavior. Inline color (set in JS) wins over
+     .emph's color via specificity. Faces are CSS classes. */
+  .cap .word.face-italic-script {
+    font-family: 'Caveat', 'Brush Script MT', 'Segoe Script', cursive;
+    font-style: italic;
+    font-weight: 700;
+  }
+  .cap .word.face-serif {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-style: italic;
+  }
+  .cap .word.face-mono {
+    font-family: 'Consolas', 'SF Mono', monospace;
+    letter-spacing: -0.4px;
+  }
+  .cap .word.face-condensed-sans {
+    font-family: 'Arial Narrow', 'Helvetica Neue Condensed', 'Roboto Condensed', sans-serif;
+    font-stretch: condensed;
+    letter-spacing: 0.2px;
+  }
+  .cap .word.face-system-bold {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-weight: 900;
+  }
+
+  /* === STYLE: word-pop ===========================================
+     Each word fades + scales in on its onset, holds, then the line
+     clears for the next sentence.                                  */
+  .cap.word-pop .word {
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity 180ms ease-out, transform 220ms cubic-bezier(.34,1.56,.64,1);
+    font-size: 22px;
+  }
+  .cap.word-pop .word.in {
+    opacity: 1;
+    transform: scale(1);
+  }
+  .cap.word-pop .word.emph.in {
+    transform: scale(1.18);
+  }
+
+  /* === STYLE: slide-up =========================================== */
+  .cap.slide-up .word {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 220ms ease-out, transform 280ms cubic-bezier(.22,.61,.36,1);
+    font-size: 22px;
+  }
+  .cap.slide-up .word.in {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* === STYLE: karaoke ============================================
+     All words visible at once, but only the active word is colored.
+     Others are dimmed. Fits Greg-style highlight-as-spoken.        */
+  .cap.karaoke .word {
+    opacity: 0.42;
+    color: white;
+    transition: opacity 120ms ease-out, color 120ms ease-out, transform 160ms ease-out;
+    font-size: 22px;
+  }
+  .cap.karaoke .word.in {
+    opacity: 1;
+    color: #ffe66d;
+    transform: scale(1.08);
+  }
+
+  /* === STYLE: bounce ============================================= */
+  .cap.bounce .word {
+    opacity: 0;
+    transform: translateY(40px) scale(0.7);
+    transition: opacity 200ms ease-out, transform 320ms cubic-bezier(.34,1.86,.64,1);
+    font-size: 22px;
+  }
+  .cap.bounce .word.in {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  /* style-name watermark */
+  .styletag {
+    position: absolute;
+    top: 10px; left: 10px;
+    z-index: 5;
+    font-family: "SF Mono", Consolas, monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,0.55);
+    background: rgba(0,0,0,0.35);
+    padding: 3px 7px;
+    border-radius: 4px;
+    letter-spacing: 0.4px;
+  }
+
+  footer {
+    margin-top: 16px;
+    font-size: 12px;
+    color: #666;
+    max-width: 800px;
+    text-align: center;
+    line-height: 1.5;
+  }
+  footer code { color: #999; }
+</style>
+</head>
+<body>
+
+<h1>
+  reel-video.skill — animated caption styles preview
+  <small>F9 (n=1 OpenClaw, 2026-05-04) + DESIGN.md item 12 part 1 rich-text (n=2 Pricing 101, 2026-05-05). Each tile auto-cycles two sentences: row 1 = bare-string emphasis (yellow tint, F9), row 2 = per-word rich-text (face / color / weight overrides).</small>
+</h1>
+
+<div class="grid">
+  <div class="tile">
+    <div class="frame">
+      <div class="styletag">word-pop</div>
+      <div class="cap word-pop" data-style="word-pop"></div>
+    </div>
+    <div class="label">word-pop</div>
+  </div>
+  <div class="tile">
+    <div class="frame">
+      <div class="styletag">slide-up</div>
+      <div class="cap slide-up" data-style="slide-up"></div>
+    </div>
+    <div class="label">slide-up</div>
+  </div>
+  <div class="tile">
+    <div class="frame">
+      <div class="styletag">karaoke</div>
+      <div class="cap karaoke" data-style="karaoke"></div>
+    </div>
+    <div class="label">karaoke</div>
+  </div>
+  <div class="tile">
+    <div class="frame">
+      <div class="styletag">bounce</div>
+      <div class="cap bounce" data-style="bounce"></div>
+    </div>
+    <div class="label">bounce</div>
+  </div>
+</div>
+
+<footer>
+  Drives all four tiles from a single timing source — same word cadence (~280 ms / word). Real builds consume <code>edge-tts</code>'s WordBoundary events for per-word onset times, dropped in for the hard-coded interval used here.
+  <br><br>
+  Schema: <code>captions: { style: word-pop|slide-up|karaoke|bounce, position: bottom-third|center|top-third, emphasis: [list] }</code>. Default <code>style: word-pop</code>, default <code>position: bottom-third</code>.<br>
+  <code>emphasis</code> entries are either bare strings (F9 default tint) or per-word objects <code>{word, face?, color?, weight?}</code> (item 12 part 1 rich-text). Faces: <code>italic-script | serif | mono | condensed-sans | system-bold</code>. Colors: <code>green | purple | blue | orange | red | black | white | yellow | accent</code>.
+</footer>
+
+<script>
+  // Two sentences, alternated per cycle so each tile demonstrates both
+  // schema forms: bare-string emphasis (F9) and per-word rich-text (item 12 part 1).
+  //
+  // emph forms:
+  //   true                                        → bare → style-default emphasis
+  //   { face?, color?, weight? }                  → per-word override (face/color/weight)
+  const SENTENCES = [
+    [ // Row 1 — F9 bare-string emphasis
+      { w: "Build" },
+      { w: "your" },
+      { w: "first", emph: true },
+      { w: "viral" },
+      { w: "reel" },
+      { w: "in" },
+      { w: "ten", emph: true },
+      { w: "minutes." }
+    ],
+    [ // Row 2 — item 12 part 1 per-word rich-text emphasis
+      { w: "The" },
+      { w: "value", emph: { face: "italic-script", color: "green" } },
+      { w: "you" },
+      { w: "create", emph: { weight: "bold" } },
+      { w: "is" },
+      { w: "your", emph: { color: "yellow" } },
+      { w: "edge.", emph: { color: "red", face: "serif" } }
+    ]
+  ];
+
+  const COLOR_MAP = {
+    green:  "#6cdb96",
+    purple: "#c285ff",
+    blue:   "#6db8ff",
+    orange: "#ffac6d",
+    red:    "#ff7373",
+    black:  "#1a1a1a",
+    white:  "#ffffff",
+    yellow: "#ffe66d",
+    accent: "#ff7eb6"
+  };
+
+  const WORD_INTERVAL_MS = 280;     // hard-coded per-word cadence (real: timing resolver)
+  const SENTENCE_HOLD_MS = 1400;    // pause after final word
+
+  function renderEmpty(capEl, sentence) {
+    capEl.innerHTML = "";
+    sentence.forEach((tok, i) => {
+      const span = document.createElement("span");
+      span.className = "word";
+      if (tok.emph) {
+        span.classList.add("emph");
+        if (typeof tok.emph === "object") {
+          if (tok.emph.face) span.classList.add("face-" + tok.emph.face);
+          if (tok.emph.color && COLOR_MAP[tok.emph.color]) {
+            span.style.color = COLOR_MAP[tok.emph.color];
+          }
+          if (tok.emph.weight) {
+            span.style.fontWeight = tok.emph.weight === "bold" ? "900" : "400";
+          }
+        }
+      }
+      span.textContent = tok.w;
+      span.dataset.idx = i;
+      capEl.appendChild(span);
+      if (i < sentence.length - 1) capEl.appendChild(document.createTextNode(" "));
+    });
+  }
+
+  function playOnce(capEl, sentence) {
+    const style = capEl.dataset.style;
+
+    if (style === "karaoke") {
+      renderEmpty(capEl, sentence);
+      sentence.forEach((_, i) => {
+        setTimeout(() => {
+          capEl.querySelectorAll(".word").forEach(w => w.classList.remove("in"));
+          capEl.querySelector(`.word[data-idx="${i}"]`).classList.add("in");
+        }, i * WORD_INTERVAL_MS);
+      });
+    } else {
+      renderEmpty(capEl, sentence);
+      sentence.forEach((_, i) => {
+        setTimeout(() => {
+          capEl.querySelector(`.word[data-idx="${i}"]`).classList.add("in");
+        }, i * WORD_INTERVAL_MS);
+      });
+    }
+  }
+
+  function loop(capEl, idx) {
+    const sentence = SENTENCES[idx % SENTENCES.length];
+    playOnce(capEl, sentence);
+    const totalMs = sentence.length * WORD_INTERVAL_MS + SENTENCE_HOLD_MS;
+    setTimeout(() => loop(capEl, idx + 1), totalMs);
+  }
+
+  // Stagger tile starts slightly so they don't all flash in lockstep
+  document.querySelectorAll(".cap").forEach((capEl, idx) => {
+    setTimeout(() => loop(capEl, 0), idx * 200);
+  });
+</script>
+
+</body>
+</html>

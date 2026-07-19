@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>reel-video.skill — ANNOTATE shapes hand-coded reference (DESIGN.md item 11b)</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0; background: #222; overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .frame-wrapper {
+    position: fixed; inset: 0;
+    display: flex; justify-content: center; align-items: center;
+  }
+  .frame {
+    width: 1080px; height: 1920px;
+    background: #faf8f3;
+    background-image:
+      linear-gradient(rgba(160, 145, 110, 0.18) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(160, 145, 110, 0.18) 1px, transparent 1px);
+    background-size: 48px 48px;
+    position: relative; overflow: hidden;
+    transform-origin: center center;
+    /* transform set by inline script below */
+    box-shadow: 0 0 40px rgba(0,0,0,0.4);
+  }
+  .title {
+    position: absolute;
+    top: 70px; left: 0; right: 0;
+    text-align: center;
+    font-size: 56px; font-weight: 700;
+    color: #1a1a1a; letter-spacing: -1.5px;
+  }
+  .subtitle {
+    position: absolute;
+    top: 150px; left: 0; right: 0;
+    text-align: center;
+    font-size: 26px; color: #5a5a5a;
+    font-weight: 400;
+  }
+  .icon {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 280px; height: 280px;
+    border-radius: 36px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: #faf8f3; text-align: center;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  }
+  .icon .glyph { font-size: 88px; line-height: 1; margin-bottom: 8px; }
+  .icon .label { font-size: 22px; font-weight: 600; letter-spacing: 0.4px; }
+
+  .caption {
+    position: absolute;
+    bottom: 180px; left: 0; right: 0;
+    text-align: center;
+    font-size: 28px; color: #1a1a1a;
+    font-weight: 500; padding: 0 80px;
+  }
+  .replay {
+    position: absolute;
+    bottom: 90px; left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a1a; color: #faf8f3;
+    border: none; border-radius: 999px;
+    padding: 18px 44px;
+    font-size: 22px; font-weight: 600;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div class="frame-wrapper">
+  <div class="frame">
+    <div class="title">ANNOTATE shapes</div>
+    <div class="subtitle">DESIGN.md item 11b — hand-coded reference</div>
+
+    <!-- 2x2 grid of icons. Each gets a different ANNOTATE shape. -->
+    <div class="icon" id="icon-1" data-tx="-200" data-ty="-300" style="background:#5b8def;">
+      <div class="glyph">[ ]</div>
+      <div class="label">bracket</div>
+    </div>
+    <div class="icon" id="icon-2" data-tx="200"  data-ty="-300" style="background:#48a675;">
+      <div class="glyph">◯</div>
+      <div class="label">ellipse</div>
+    </div>
+    <div class="icon" id="icon-3" data-tx="-200" data-ty="300"  style="background:#e85a4f;">
+      <div class="glyph">↳</div>
+      <div class="label">elbow-arrow</div>
+    </div>
+    <div class="icon" id="icon-4" data-tx="200"  data-ty="300"  style="background:#b066d6;">
+      <div class="glyph">_</div>
+      <div class="label">underline</div>
+    </div>
+
+    <!-- Pre-baked SVG: each shape's geometry computed for the resting bbox
+         of its target icon. Same numbers the interpreter would compute. -->
+    <svg id="annotate-overlay" viewBox="0 0 1080 1920" preserveAspectRatio="none"
+         style="position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:50;">
+      <!-- (1) Bracket above icon-1: bbox 200,520,280,280 → bracket at y=490, tips reach 520 -->
+      <path id="ann-bracket" fill="none" stroke="#1a1a1a" stroke-width="5"
+            stroke-linecap="square" stroke-linejoin="miter"
+            d="M 200 520 L 200 490 L 480 490 L 480 520" />
+      <text id="ann-bracket-label" x="340" y="472" text-anchor="middle"
+            font-size="32" font-weight="600" fill="#1a1a1a"
+            font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+            style="opacity: 0;">above</text>
+
+      <!-- (2) Ellipse around icon-2: cx=740 cy=660 rx=164 ry=164 -->
+      <ellipse id="ann-ellipse" cx="740" cy="660" rx="164" ry="164"
+               fill="none" stroke="#1a1a1a" stroke-width="5" />
+      <text id="ann-ellipse-label" x="740" y="478" text-anchor="middle"
+            font-size="32" font-weight="600" fill="#1a1a1a"
+            font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+            style="opacity: 0;">around</text>
+
+      <!-- (3) Elbow-arrow to icon-3: target bbox 200,1120,280,280; label offset
+           (340,-300) → label center (680, 960). Edge-midpoint anchoring:
+           |offset.y|=300 > |offset.x|*0.7=238 → vertical-dominant →
+           target = top-edge midpoint (340, 1120). Horizontal-first elbow:
+           (660, 960) → (340, 960) → (340, 1120). Arrowhead at (340, 1120)
+           pointing down (lands on icon-3's straight top edge, no rounded
+           corner gap). -->
+      <path id="ann-elbow" fill="none" stroke="#1a1a1a" stroke-width="5"
+            stroke-linecap="round" stroke-linejoin="miter"
+            d="M 660 960 L 340 960 L 340 1120" />
+      <path id="ann-elbow-arrowhead" fill="none" stroke="#1a1a1a" stroke-width="5"
+            stroke-linecap="round" stroke-linejoin="round"
+            d="M 332.2 1103.8 L 340 1120 L 347.8 1103.8"
+            style="opacity: 0;" />
+      <text id="ann-elbow-label" x="680" y="971" text-anchor="start"
+            font-size="32" font-weight="600" fill="#1a1a1a"
+            font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+            style="opacity: 0;">callout</text>
+
+      <!-- (4) Underline below icon-4: bbox 600,1120,280,280; line at y=1414 -->
+      <line id="ann-underline" x1="600" y1="1414" x2="880" y2="1414"
+            stroke="#1a1a1a" stroke-width="5" stroke-linecap="round" />
+      <text id="ann-underline-label" x="740" y="1448" text-anchor="middle"
+            font-size="28" font-weight="500" fill="#1a1a1a"
+            font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+            style="opacity: 0;">below</text>
+    </svg>
+
+    <div class="caption">Four shape kinds — bracket, ellipse, elbow-arrow, underline.</div>
+    <button class="replay" id="replay">Replay</button>
+  </div>
+</div>
+
+<script>
+// Fit-frame helper — sets .frame's transform: scale() based on viewport.
+(function () {
+  const frame = document.querySelector('.frame');
+  if (!frame) return;
+  const apply = () => {
+    const s = Math.min(window.innerWidth / 1080, window.innerHeight / 1920);
+    frame.style.transform = 'scale(' + s + ')';
+  };
+  apply();
+  window.addEventListener('resize', apply);
+})();
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+(function () {
+  // Hand-coded reference: ANNOTATE with kind ∈ {bracket, ellipse,
+  // elbow-arrow, underline}. Same animation must be reproducible from
+  // annotate-shapes.yaml via gesture-interpreter.js (grammar version).
+
+  const ICON_STAGGER = 0.2;       // first icon at 0.2 s, then +0.2 each
+  const ICON_DUR     = 0.5;
+  const ANN_DUR      = 0.7;
+  const ANN_FIRST    = 1.5;       // first annotation start
+  const ANN_GAP      = 1.0;       // gap between successive annotations
+
+  function setupPathReveal(sel) {
+    const el = document.querySelector(sel);
+    if (!el) return 0;
+    const len = el.getTotalLength();
+    el.style.strokeDasharray = len;
+    el.style.strokeDashoffset = len;
+    return len;
+  }
+
+  function resetState() {
+    document.querySelectorAll('.icon').forEach(el => {
+      const tx = parseFloat(el.dataset.tx);
+      const ty = parseFloat(el.dataset.ty);
+      gsap.set(el, {
+        xPercent: -50, yPercent: -50,
+        x: tx, y: ty,
+        scale: 0.5, opacity: 0
+      });
+    });
+    setupPathReveal('#ann-bracket');
+    setupPathReveal('#ann-ellipse');
+    setupPathReveal('#ann-elbow');
+    // underline is a <line>; getTotalLength works on it too
+    setupPathReveal('#ann-underline');
+
+    gsap.set([
+      '#ann-bracket-label',
+      '#ann-ellipse-label',
+      '#ann-elbow-label',
+      '#ann-elbow-arrowhead',
+      '#ann-underline-label'
+    ], { opacity: 0 });
+    gsap.set('#replay', { opacity: 0 });
+  }
+
+  function build() {
+    resetState();
+    const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
+
+    // 4 icons reveal staggered
+    [1, 2, 3, 4].forEach((i, idx) => {
+      tl.to('#icon-' + i, {
+        opacity: 1, scale: 1, duration: ICON_DUR
+      }, ICON_STAGGER + idx * 0.2);
+    });
+
+    // 4 annotations land sequentially after icons settle
+    const annotations = [
+      { path: '#ann-bracket',   label: '#ann-bracket-label',   arrow: null                       },
+      { path: '#ann-ellipse',   label: '#ann-ellipse-label',   arrow: null                       },
+      { path: '#ann-elbow',     label: '#ann-elbow-label',     arrow: '#ann-elbow-arrowhead'     },
+      { path: '#ann-underline', label: '#ann-underline-label', arrow: null                       }
+    ];
+
+    annotations.forEach((a, idx) => {
+      const t = ANN_FIRST + idx * ANN_GAP;
+      tl.to(a.path, {
+        strokeDashoffset: 0,
+        duration: ANN_DUR,
+        ease: 'power2.out'
+      }, t);
+      tl.to(a.label, {
+        opacity: 1, duration: 0.3
+      }, t + ANN_DUR * 0.7);
+      if (a.arrow) {
+        tl.to(a.arrow, {
+          opacity: 1, duration: 0.15
+        }, t + ANN_DUR * 0.85);
+      }
+    });
+
+    const lastEnd = ANN_FIRST + (annotations.length - 1) * ANN_GAP + ANN_DUR;
+    tl.to('#replay', { opacity: 1, duration: 0.4 }, lastEnd + 0.4);
+  }
+
+  build();
+  document.querySelector('#replay').addEventListener('click', build);
+})();
+</script>
+</body>
+</html>

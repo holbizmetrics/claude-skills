@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>reel-video.skill — Pricing 101 mock (hand-coded reference, no grammar pair)</title>
+<style>
+  :root {
+    --beige: #efe5d9;
+    --green-mid: #6ba896;
+    --green-dark: #243b32;
+    --coral: #e26a4d;
+    --ink: #1c1c1c;
+    --paper: #f6efe5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    background: #1a1a1a;
+    color: #faf8f3;
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    overflow: hidden;
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .reel {
+    width: 540px;
+    height: 960px;
+    background: var(--beige);
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.6);
+  }
+  /* Scene base */
+  .scene {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+  }
+
+  /* ===================================================================
+     SCENE 1 — tiled $-coin grid (opening hook)
+     =================================================================== */
+  .scene-1 .coin {
+    position: absolute;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Georgia", "Times New Roman", serif;
+    font-weight: 700;
+    color: var(--paper);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    will-change: transform;
+  }
+  .scene-1 .coin.dark { background: var(--green-dark); }
+  .scene-1 .coin.mid  { background: var(--green-mid); }
+
+  /* ===================================================================
+     SCENE 2 — bicolor split with "Price" bubble emerging
+     =================================================================== */
+  .scene-2 .panel-top {
+    position: absolute;
+    inset: 0 0 50% 0;
+    background: var(--beige);
+  }
+  .scene-2 .panel-bottom {
+    position: absolute;
+    inset: 50% 0 0 0;
+    background: var(--green-mid);
+    transform-origin: top center;
+  }
+  .scene-2 .price-bubble {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: var(--paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Georgia", serif;
+    font-weight: 700;
+    font-style: italic;
+    color: var(--green-dark);
+    font-size: 56px;
+    z-index: 5;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  }
+
+  /* ===================================================================
+     SCENE 3 — pie chart + elbow-arrow callout
+     =================================================================== */
+  .scene-3 {
+    background: var(--beige);
+  }
+  .scene-3 .pie-wrap {
+    position: absolute;
+    left: 50%;
+    top: 58%;
+    transform: translate(-50%, -50%);
+    width: 380px;
+    height: 380px;
+  }
+  .scene-3 .pie {
+    width: 100%;
+    height: 100%;
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  .scene-3 .callout {
+    position: absolute;
+    left: 50%;
+    top: 18%;
+    transform: translate(-30%, 0);
+    opacity: 0;
+  }
+  .scene-3 .callout-text {
+    font-family: "Georgia", serif;
+    font-size: 36px;
+    line-height: 1.15;
+    color: var(--green-dark);
+    font-weight: 700;
+  }
+  .scene-3 .callout-text .em {
+    font-style: italic;
+    color: var(--green-mid);
+    font-family: "Brush Script MT", "Lucida Handwriting", "Snell Roundhand", cursive;
+    font-weight: 400;
+    font-size: 44px;
+  }
+  .scene-3 .elbow {
+    width: 80px;
+    height: 100px;
+    margin-left: 60px;
+    margin-top: -8px;
+  }
+  .scene-3 .elbow path {
+    fill: none;
+    stroke: var(--green-dark);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-dasharray: 200;
+    stroke-dashoffset: 200;
+  }
+
+  /* Hand-drawn-feel slice labels */
+  .scene-3 .pie-label {
+    position: absolute;
+    font-family: "Georgia", serif;
+    font-style: italic;
+    font-weight: 700;
+    color: var(--green-dark);
+    font-size: 22px;
+    opacity: 0;
+  }
+
+  /* Telemetry / controls */
+  .controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    color: #888;
+    font-family: "SF Mono", Consolas, monospace;
+    font-size: 12px;
+  }
+  button.play {
+    padding: 8px 18px;
+    font-size: 13px;
+    border: 0;
+    border-radius: 6px;
+    background: var(--coral);
+    color: white;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  button.play:hover { background: #c8593d; }
+  .caveat {
+    color: #888;
+    font-size: 11px;
+    max-width: 520px;
+    text-align: center;
+    line-height: 1.5;
+  }
+  .caveat code { color: #aaa; }
+</style>
+</head>
+<body>
+
+<div class="reel" id="reel">
+
+  <!-- ============================ SCENE 1 ============================ -->
+  <div class="scene scene-1" id="scene-1">
+    <!-- coins generated by JS -->
+  </div>
+
+  <!-- ============================ SCENE 2 ============================ -->
+  <div class="scene scene-2" id="scene-2">
+    <div class="panel-top"></div>
+    <div class="panel-bottom" id="panel-bottom"></div>
+    <div class="price-bubble" id="price-bubble">Price</div>
+  </div>
+
+  <!-- ============================ SCENE 3 ============================ -->
+  <div class="scene scene-3" id="scene-3">
+    <div class="pie-wrap">
+      <svg class="pie" id="pie" viewBox="-110 -110 220 220">
+        <!-- main dark slice (~85%) -->
+        <path id="slice-main" fill="#243b32" d="M0,0 L0,-100 A100,100 0 1,1 -88,47 z"></path>
+        <!-- coral slice (~5%) -->
+        <path id="slice-coral" fill="#e26a4d" d="M0,0 L0,-100 A100,100 0 0,1 31,-95 z" opacity="0"></path>
+        <!-- mid-green slice (~10%) -->
+        <path id="slice-green" fill="#6ba896" d="M0,0 L31,-95 A100,100 0 0,1 88,-47 z" opacity="0"></path>
+      </svg>
+      <span class="pie-label" id="pie-label-5"  style="left: 32%; top: 12%;">5%</span>
+      <span class="pie-label" id="pie-label-10" style="left: 56%; top: 18%;">1/10</span>
+    </div>
+
+    <div class="callout" id="callout">
+      <div class="callout-text">
+        the <span class="em">value</span><br>you create
+      </div>
+      <svg class="elbow" viewBox="0 0 80 100" preserveAspectRatio="none">
+        <path id="elbow-path" d="M 10 5 L 10 65 L 60 95"></path>
+      </svg>
+    </div>
+  </div>
+
+</div>
+
+<div class="controls">
+  <button class="play" id="playBtn">▶ Play</button>
+  <span id="telemetry">scene 0 · t = 0.0s</span>
+</div>
+<div class="caveat">
+  <strong>reel-video.skill — pricing-101-mock</strong> · Hand-coded reference (no grammar pair).
+  Demonstrates editorial-illustration patterns surfaced by the n=2 KG dissection on Greg Isenberg's "Pricing 101".
+  Patterns shown: tiled-token grid · bicolor-panel split + bubble emergence · pie chart + elbow-arrow callout + mixed-typography caption (italic-script <code>value</code> in green inside the dark-serif phrase).
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+(function () {
+  // ───────────────────────── Scene 1 setup: coin grid ─────────────────────────
+  const scene1 = document.getElementById('scene-1');
+  const COIN_VALUES = ['$498', '$207', '$170'];
+  const COINS = [];
+  // 6×8 = 48 coins on a slightly jittered grid
+  const cols = 6, rows = 9;
+  const cellW = 540 / cols;
+  const cellH = 960 / rows;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const coin = document.createElement('div');
+      const sizeJitter = 64 + Math.random() * 32;     // 64–96 px
+      const xJitter = (Math.random() - 0.5) * 24;
+      const yJitter = (Math.random() - 0.5) * 24;
+      coin.className = 'coin ' + ((r + c) % 2 ? 'dark' : 'mid');
+      coin.style.width  = sizeJitter + 'px';
+      coin.style.height = sizeJitter + 'px';
+      coin.style.left   = (c * cellW + cellW / 2 - sizeJitter / 2 + xJitter) + 'px';
+      coin.style.top    = (r * cellH + cellH / 2 - sizeJitter / 2 + yJitter) + 'px';
+      coin.style.fontSize = Math.round(sizeJitter * 0.32) + 'px';
+      coin.textContent = COIN_VALUES[0];
+      coin.dataset.idx = COINS.length;
+      scene1.appendChild(coin);
+      COINS.push(coin);
+    }
+  }
+
+  // ───────────────────────── Timeline build ─────────────────────────
+  const playBtn = document.getElementById('playBtn');
+  const telemetry = document.getElementById('telemetry');
+  let masterTL = null;
+
+  function build() {
+    // Reset everything
+    if (masterTL) masterTL.kill();
+
+    gsap.set('.scene', { opacity: 0 });
+    gsap.set('#scene-1', { opacity: 1 });
+    gsap.set(COINS, { scale: 0, opacity: 0 });
+    COINS.forEach(c => c.textContent = COIN_VALUES[0]);
+
+    gsap.set('#panel-bottom', { scaleY: 0 });
+    gsap.set('#price-bubble', { scale: 0, rotation: -8 });
+
+    gsap.set('#pie', { scale: 0.7, opacity: 0 });
+    gsap.set('#slice-coral', { opacity: 0, transformOrigin: '0 0', scale: 0.4 });
+    gsap.set('#slice-green', { opacity: 0, transformOrigin: '0 0', scale: 0.4 });
+    gsap.set('.pie-label', { opacity: 0, y: 6 });
+    gsap.set('#callout', { opacity: 0, y: -10 });
+    gsap.set('#elbow-path', { strokeDashoffset: 200 });
+
+    masterTL = gsap.timeline({
+      onUpdate: () => {
+        const t = masterTL.time();
+        let scene = 0;
+        if (t > 12)      scene = 3;
+        else if (t > 7)  scene = 2;
+        else if (t > 0)  scene = 1;
+        telemetry.textContent = `scene ${scene} · t = ${t.toFixed(1)}s`;
+      },
+      onComplete: () => {
+        playBtn.textContent = '▶ Replay';
+        playBtn.disabled = false;
+      }
+    });
+
+    // ── SCENE 1 (0 – 7s): coin grid, opening hook
+    masterTL.to(COINS, {
+      scale: 1, opacity: 1,
+      duration: 0.6,
+      ease: 'back.out(1.6)',
+      stagger: { amount: 0.9, from: 'random' }
+    }, 0);
+
+    // value cycle: $498 → $207 → $170 (each value swap = quick fade)
+    function swapValueAt(time, value) {
+      masterTL.call(() => COINS.forEach(c => c.textContent = value), null, time);
+    }
+    swapValueAt(2.0, '$207');
+    swapValueAt(4.0, '$170');
+    swapValueAt(5.5, '$498');
+
+    // gentle drift on the field
+    masterTL.to(COINS, {
+      y: '+=8',
+      duration: 2.5,
+      ease: 'sine.inOut',
+      yoyo: true,
+      repeat: 2,
+      stagger: { amount: 0.6, from: 'random' }
+    }, 0.5);
+
+    // exit: scale + fade out at scene end
+    masterTL.to(COINS, {
+      scale: 0.8, opacity: 0,
+      duration: 0.5,
+      ease: 'power2.in',
+      stagger: { amount: 0.3, from: 'random' }
+    }, 6.5);
+    masterTL.to('#scene-1', { opacity: 0, duration: 0.4 }, 7);
+
+    // ── SCENE 2 (7 – 12s): bicolor split + Price bubble
+    masterTL.set('#scene-2', { opacity: 1 }, 7);
+    masterTL.to('#panel-bottom', {
+      scaleY: 1,
+      duration: 0.8,
+      ease: 'power2.inOut'
+    }, 7.2);
+    masterTL.to('#price-bubble', {
+      scale: 1, rotation: 0,
+      duration: 0.7,
+      ease: 'back.out(1.5)'
+    }, 8.2);
+    // hold
+    masterTL.to('#price-bubble', {
+      y: '-=6',
+      duration: 1.4,
+      ease: 'sine.inOut',
+      yoyo: true, repeat: 1
+    }, 9.2);
+    // exit
+    masterTL.to('#price-bubble', {
+      scale: 0.7, opacity: 0,
+      duration: 0.5,
+      ease: 'power2.in'
+    }, 11.5);
+    masterTL.to('#panel-bottom', {
+      scaleY: 0,
+      duration: 0.5,
+      ease: 'power2.inOut'
+    }, 11.5);
+    masterTL.to('#scene-2', { opacity: 0, duration: 0.3 }, 12);
+
+    // ── SCENE 3 (12 – 22s): pie + elbow callout
+    masterTL.set('#scene-3', { opacity: 1 }, 12);
+    masterTL.to('#pie', {
+      scale: 1, opacity: 1,
+      duration: 0.9,
+      ease: 'power2.out'
+    }, 12.2);
+    // accent slices reveal
+    masterTL.to('#slice-coral', {
+      opacity: 1, scale: 1,
+      duration: 0.5,
+      ease: 'back.out(2)'
+    }, 13.4);
+    masterTL.to('#slice-green', {
+      opacity: 1, scale: 1,
+      duration: 0.5,
+      ease: 'back.out(2)'
+    }, 13.7);
+    masterTL.to('#pie-label-5', {
+      opacity: 1, y: 0,
+      duration: 0.3
+    }, 14.0);
+    masterTL.to('#pie-label-10', {
+      opacity: 1, y: 0,
+      duration: 0.3
+    }, 14.3);
+
+    // elbow-arrow callout: text fades in + line strokes in
+    masterTL.to('#callout', {
+      opacity: 1, y: 0,
+      duration: 0.6,
+      ease: 'power2.out'
+    }, 15.5);
+    masterTL.to('#elbow-path', {
+      strokeDashoffset: 0,
+      duration: 1.0,
+      ease: 'power1.out'
+    }, 15.7);
+    // hold
+    masterTL.to('#callout', {
+      duration: 4.0,
+      ease: 'none'
+    }, 17);
+    // exit
+    masterTL.to('#scene-3', { opacity: 0, duration: 0.6 }, 21.5);
+
+    masterTL.pause(0);
+  }
+
+  build();
+
+  playBtn.addEventListener('click', () => {
+    if (masterTL.progress() === 1 || masterTL.progress() === 0) {
+      build();
+    }
+    masterTL.restart();
+    playBtn.textContent = '▌ Playing…';
+    playBtn.disabled = true;
+  });
+})();
+</script>
+
+</body>
+</html>

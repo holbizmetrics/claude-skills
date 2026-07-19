@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>reel-video.skill — group-bracket hand-coded reference (DESIGN.md item 11a)</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0; background: #222; overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .frame-wrapper {
+    position: fixed; inset: 0;
+    display: flex; justify-content: center; align-items: center;
+  }
+  .frame {
+    width: 1080px; height: 1920px;
+    background: #faf8f3;
+    background-image:
+      linear-gradient(rgba(160, 145, 110, 0.18) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(160, 145, 110, 0.18) 1px, transparent 1px);
+    background-size: 48px 48px;
+    position: relative; overflow: hidden;
+    transform-origin: center center;
+    /* transform set by inline script below; CSS scale() can't reliably
+       coerce length-to-number across browsers. */
+    box-shadow: 0 0 40px rgba(0,0,0,0.4);
+  }
+  .title {
+    position: absolute;
+    top: 100px; left: 0; right: 0;
+    text-align: center;
+    font-size: 56px; font-weight: 700;
+    color: #1a1a1a; letter-spacing: -1.5px;
+  }
+  .subtitle {
+    position: absolute;
+    top: 180px; left: 0; right: 0;
+    text-align: center;
+    font-size: 26px; color: #5a5a5a;
+    font-weight: 400;
+  }
+  .icon {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 280px; height: 280px;
+    border-radius: 36px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: #faf8f3; text-align: center;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  }
+  .icon .glyph { font-size: 96px; line-height: 1; margin-bottom: 8px; }
+  .icon .label { font-size: 24px; font-weight: 600; letter-spacing: 0.4px; }
+
+  .caption {
+    position: absolute;
+    bottom: 200px; left: 0; right: 0;
+    text-align: center;
+    font-size: 32px; color: #1a1a1a;
+    font-weight: 500; padding: 0 80px;
+  }
+  .replay {
+    position: absolute;
+    bottom: 100px; left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a1a; color: #faf8f3;
+    border: none; border-radius: 999px;
+    padding: 18px 44px;
+    font-size: 22px; font-weight: 600;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div class="frame-wrapper">
+  <div class="frame">
+    <div class="title">group-bracket</div>
+    <div class="subtitle">DESIGN.md item 11a — hand-coded reference</div>
+
+    <!-- 3 icons in a row, evenly spaced. data-tx/data-ty are the resting
+         offsets the interpreter (and the bbox helper) read. -->
+    <div class="icon" id="icon-1" data-tx="-340" data-ty="-300" style="background:#5b8def;">
+      <div class="glyph">14</div>
+      <div class="label">motion-blur</div>
+    </div>
+    <div class="icon" id="icon-2" data-tx="0"    data-ty="-300" style="background:#48a675;">
+      <div class="glyph">13</div>
+      <div class="label">style cascade</div>
+    </div>
+    <div class="icon" id="icon-3" data-tx="340"  data-ty="-300" style="background:#b066d6;">
+      <div class="glyph">12</div>
+      <div class="label">rich-text</div>
+    </div>
+
+    <!-- SVG overlay where the bracket draws. Sized to the frame's natural
+         dimensions; non-interactive. -->
+    <svg id="annotate-overlay" viewBox="0 0 1080 1920" preserveAspectRatio="none"
+         style="position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:50;">
+      <!-- Bracket path: top side, gap=30, tipLen=30. BBox of the 3 icons:
+           x=60, y=520, w=960, h=280. Bracket at y=490, tips reach 520. -->
+      <path id="bracket-path" fill="none" stroke="#1a1a1a"
+            stroke-width="5" stroke-linecap="square" stroke-linejoin="miter"
+            d="M 60 520 L 60 490 L 1020 490 L 1020 520" />
+      <!-- Label, centered above the bracket. -->
+      <text id="bracket-label" x="540" y="472" text-anchor="middle"
+            font-size="36"
+            font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+            font-weight="600" fill="#1a1a1a"
+            style="opacity: 0;">Tier 2 — closed</text>
+    </svg>
+
+    <div class="caption" id="captions">A bracket spans three element ids and labels the group.</div>
+    <button class="replay" id="replay">Replay</button>
+  </div>
+</div>
+
+<script>
+// Fit-frame helper — sets .frame's transform: scale() based on viewport.
+(function () {
+  const frame = document.querySelector('.frame');
+  if (!frame) return;
+  const apply = () => {
+    const s = Math.min(window.innerWidth / 1080, window.innerHeight / 1920);
+    frame.style.transform = 'scale(' + s + ')';
+  };
+  apply();
+  window.addEventListener('resize', apply);
+})();
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+(function () {
+  // Hand-coded reference: ANNOTATE with target=[icon-1,icon-2,icon-3] and
+  // kind=bracket. Same animation must be reproducible from
+  // group-bracket.yaml via gesture-interpreter.js (see grammar version).
+
+  function resetState() {
+    document.querySelectorAll('.icon').forEach(el => {
+      const tx = parseFloat(el.dataset.tx);
+      const ty = parseFloat(el.dataset.ty);
+      gsap.set(el, {
+        xPercent: -50, yPercent: -50,
+        x: tx, y: ty,
+        scale: 0.5, opacity: 0
+      });
+    });
+
+    // Pre-set the bracket path so stroke-dashoffset reveals it
+    const path = document.querySelector('#bracket-path');
+    const len = path.getTotalLength();
+    path.style.strokeDasharray = len;
+    path.style.strokeDashoffset = len;
+    gsap.set('#bracket-label', { opacity: 0 });
+    gsap.set('#replay', { opacity: 0 });
+  }
+
+  function build() {
+    resetState();
+    const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
+
+    // Three icons reveal staggered
+    tl.to('#icon-1', { opacity: 1, scale: 1, duration: 0.5 }, 0.2);
+    tl.to('#icon-2', { opacity: 1, scale: 1, duration: 0.5 }, 0.5);
+    tl.to('#icon-3', { opacity: 1, scale: 1, duration: 0.5 }, 0.8);
+
+    // Bracket draws in (stroke-dashoffset reveal), label fades in toward end
+    const drawStart = 1.5;
+    const drawDur   = 0.7;
+    tl.to('#bracket-path', {
+      strokeDashoffset: 0,
+      duration: drawDur,
+      ease: 'power2.out'
+    }, drawStart);
+    tl.to('#bracket-label', {
+      opacity: 1, duration: 0.3
+    }, drawStart + drawDur * 0.7);
+
+    // Replay button
+    tl.to('#replay', { opacity: 1, duration: 0.4 }, drawStart + drawDur + 0.4);
+  }
+
+  build();
+  document.querySelector('#replay').addEventListener('click', build);
+})();
+</script>
+</body>
+</html>

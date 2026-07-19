@@ -1,0 +1,120 @@
+# video-mock.yaml — grammar-driven version of video-mock.html
+# Goal: feed this to gesture-interpreter.js and produce a visually equivalent
+# animation to the hand-coded video-mock.html. If they match, the grammar holds.
+# If they drift, the gap tells us what the grammar is missing.
+
+title: "OpenClaw-style zoom-out reveal + morph to phone"
+voice: conversational
+format: vertical
+background: grid-paper
+
+chapter_nav:
+  items: [Intro, Docs, Setup, Split, Skills, Access]
+  style: hand-drawn
+
+scenes:
+  # Beat 1 — close-up hold on CRT screen
+  - id: intro-close
+    stage: crt
+    chapter: Intro
+    content:
+      type: text
+      slot: screen
+      value: "Installing"
+    camera:
+      start: zoom-in
+      end: hold
+      duration: 2.5
+    overlays:
+      - { gesture: PLACE, element: chapter_nav, at_sentence: 0 }
+    narration: "First we install. Watch the dependencies pull in."
+
+  # Beat 2 — zoom out, revealing CRT in context
+  - id: zoom-out
+    stage: crt
+    transition_in: hold-from-previous
+    content: { type: text, slot: screen, value: "Installing" }
+    camera:
+      start: hold
+      end: zoom-out
+      duration: 3.0
+    narration: "Now zoom out, the CRT is one node in a larger system."
+
+  # Beat 3 — node graph reveal: 5 icons + 5 lines, sequential
+  - id: icons-reveal
+    stage: crt
+    chapter: Docs
+    transition_in: hold-from-previous
+    content: { type: text, slot: screen, value: "Installing" }
+    duration: 5.0
+    overlays:
+      - gesture: PLACE
+        elements: [icon-settings, icon-docs, icon-tree, icon-phone, icon-network]
+        reveal: per-step
+        stagger: 0.9
+        duration: 0.5
+        easing: back.out(1.8)
+      - gesture: CONNECT
+        from: stage
+        to: [icon-settings, icon-docs, icon-tree, icon-phone, icon-network]
+        stroke: dashoffset
+        reveal: per-step
+        stagger: 0.9
+        duration: 0.7
+        easing: power2.out
+        sync_with: PLACE
+    narration: "Five icons reveal, each one is a tip we cover next."
+
+  # Beat 4 — hold the composition
+  - id: hold-composition
+    stage: crt
+    transition_in: hold-from-previous
+    pause: 1.2
+
+  # Beat 5 — morph: stage 1 out (up + blur + fade), stage 2 in (rise from below)
+  - id: morph-to-phone
+    stage: phone
+    chapter: Setup
+    transition_in: morph-from-previous
+    transition_duration: 1.5
+    transition_easing: power2.inOut
+    content:
+      type: notification
+      slot: screen
+      sender: Claude
+      title: "Build complete"
+      body: "All five tips wired together. Ship it."
+      checkmark: true
+    narration: "But that's just the setup, watch what builds."
+
+  # Beat 6 — notification card materializes
+  - id: notif-show
+    stage: phone
+    transition_in: hold-from-previous
+    duration: 0.7
+    overlays:
+      - gesture: PLACE
+        element: notif-card
+        easing: back.out(1.5)
+        duration: 0.5
+        delay: 0.1
+    narration: "Build complete. The proof shows up here."
+
+  # Beat 7 — annotation: arrow + label
+  - id: annotation
+    stage: phone
+    transition_in: hold-from-previous
+    duration: 1.0
+    overlays:
+      - gesture: ANNOTATE
+        target: notif-card
+        label: "real proof, not a mockup"
+        arrow: curved
+        duration: 0.6
+        easing: power2.out
+
+  # Beat 8 — final hold
+  - id: final-hold
+    stage: phone
+    transition_in: hold-from-previous
+    pause: 1.6

@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>reel-video.skill — OpenClaw mock prototype v0.1</title>
+<style>
+  /* Reset + page */
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #222;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  /* Frame — 1080x1920 vertical reel, scaled to viewport */
+  .frame-wrapper {
+    position: fixed; inset: 0;
+    display: flex; justify-content: center; align-items: center;
+  }
+  .frame {
+    width: 1080px; height: 1920px;
+    background: #faf8f3;
+    background-image:
+      linear-gradient(rgba(160, 145, 110, 0.18) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(160, 145, 110, 0.18) 1px, transparent 1px);
+    background-size: 48px 48px;
+    position: relative;
+    overflow: hidden;
+    transform-origin: center center;
+    /* transform set by inline script below; CSS scale() can't reliably
+       coerce length-to-number across browsers. */
+    box-shadow: 0 0 40px rgba(0,0,0,0.4);
+  }
+
+  /* Chapter nav */
+  .chapter-nav {
+    position: absolute;
+    top: 80px; left: 0; right: 0;
+    height: 80px;
+    display: flex; align-items: center;
+    justify-content: space-around;
+    padding: 0 30px;
+    z-index: 20;
+    font-size: 28px;
+    color: #1a1a1a;
+    font-weight: 500;
+    letter-spacing: -0.5px;
+  }
+  .chapter-nav .item {
+    display: flex; align-items: center; gap: 10px;
+    opacity: 0.4;
+    transition: opacity 0.4s ease, font-weight 0.4s ease;
+  }
+  .chapter-nav .item.active {
+    opacity: 1;
+    font-weight: 700;
+  }
+  .chapter-nav .num {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: #1a1a1a;
+    color: #faf8f3;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    font-weight: 600;
+    transition: background 0.4s ease, transform 0.4s ease;
+  }
+  .chapter-nav .item.active .num {
+    background: #d97757;
+    transform: scale(1.1);
+  }
+  .chapter-nav .underline {
+    position: absolute;
+    bottom: 0; left: 30px; right: 30px; height: 2px;
+    background: #1a1a1a;
+  }
+
+  /* Stage — zoom target. Origin at CRT center. */
+  .stage {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(1);
+    transform-origin: center center;
+    width: 1px; height: 1px; /* logical anchor — children position absolutely relative to this */
+  }
+
+  /* Connections SVG — drawn between CRT and icons */
+  .connections {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 1400px; height: 1400px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    overflow: visible;
+    z-index: 1;
+  }
+  .connections path {
+    stroke: #1a1a1a;
+    stroke-width: 2.5;
+    fill: none;
+    stroke-linecap: round;
+    stroke-dasharray: 1200;
+    stroke-dashoffset: 1200;
+  }
+  .junction {
+    fill: #7ec4a5;
+    stroke: #1a1a1a;
+    stroke-width: 1.5;
+    opacity: 0;
+  }
+
+  /* CRT */
+  .crt {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 620px; height: 480px;
+    z-index: 5;
+    perspective: 800px;
+  }
+  .crt-body {
+    width: 100%; height: 100%;
+    background: linear-gradient(180deg, #ddd5be 0%, #b8aa8e 100%);
+    border-radius: 18px;
+    box-shadow:
+      inset 0 -6px 12px rgba(0,0,0,0.18),
+      inset 0 4px 8px rgba(255,255,255,0.4),
+      0 24px 50px rgba(0,0,0,0.35);
+    padding: 40px 50px 60px;
+    position: relative;
+    transform: rotateX(2deg);
+  }
+  .crt-screen {
+    width: 100%; height: 100%;
+    background: radial-gradient(ellipse at center, #2a2a4a 0%, #0e0e1a 100%);
+    border-radius: 16px;
+    box-shadow:
+      inset 0 0 40px rgba(0,0,0,0.9),
+      inset 0 0 8px rgba(120, 200, 255, 0.15);
+    position: relative;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .crt-screen::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent 0px, transparent 2px,
+      rgba(0,0,0,0.18) 2px, rgba(0,0,0,0.18) 4px
+    );
+    pointer-events: none;
+    z-index: 2;
+  }
+  .crt-screen::after {
+    content: '';
+    position: absolute;
+    top: 6%; left: 8%; width: 32%; height: 38%;
+    background: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 60%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 3;
+  }
+  .screen-content {
+    color: #c8e8ff;
+    font-family: 'Courier New', monospace;
+    font-size: 32px;
+    z-index: 1;
+    position: relative;
+    text-shadow: 0 0 8px rgba(120, 200, 255, 0.6);
+  }
+  .screen-content .blink {
+    display: inline-block;
+    width: 14px; height: 28px;
+    background: #c8e8ff;
+    margin-left: 6px;
+    vertical-align: middle;
+    animation: blink 1s steps(2) infinite;
+  }
+  @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+
+  /* CRT base / stand */
+  .crt-base {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-12px);
+    width: 280px; height: 40px;
+    background: linear-gradient(180deg, #ccc3ad 0%, #a0937a 100%);
+    border-radius: 4px 4px 12px 12px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.25);
+  }
+
+  /* Keyboard */
+  .keyboard {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, calc(-50% + 360px));
+    width: 540px; height: 70px;
+    background: linear-gradient(180deg, #ddd5be 0%, #b8aa8e 100%);
+    border-radius: 8px;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.3);
+    background-image:
+      repeating-linear-gradient(90deg,
+        transparent 0px, transparent 42px,
+        rgba(0,0,0,0.2) 42px, rgba(0,0,0,0.2) 44px),
+      repeating-linear-gradient(180deg,
+        transparent 0px, transparent 22px,
+        rgba(0,0,0,0.18) 22px, rgba(0,0,0,0.18) 24px),
+      linear-gradient(180deg, #ddd5be 0%, #b8aa8e 100%);
+    z-index: 4;
+  }
+
+  /* Icons — 5 nodes around CRT */
+  .icon {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #95d2b3 0%, #6db895 100%);
+    box-shadow:
+      0 12px 24px rgba(0,0,0,0.25),
+      inset 0 -4px 8px rgba(0,0,0,0.15),
+      inset 0 4px 8px rgba(255,255,255,0.3);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 3;
+    opacity: 0;
+  }
+  .icon svg {
+    width: 64px; height: 64px;
+    stroke: white;
+    fill: none;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Icon positions handled via GSAP set/animate (xPercent/yPercent/x/y/scale).
+     CSS leaves transform unset so GSAP owns the full transform string. */
+
+  /* Stage 2 — phone bezel + notification card */
+  .stage-2 {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 1px; height: 1px;
+    z-index: 8;
+    opacity: 0;
+  }
+  .phone {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 380px; height: 760px;
+    background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+    border-radius: 52px;
+    padding: 14px;
+    box-shadow:
+      0 24px 50px rgba(0,0,0,0.45),
+      inset 0 0 0 2px #2a2a2a;
+  }
+  .phone-screen {
+    width: 100%; height: 100%;
+    background: linear-gradient(180deg, #faf8f3 0%, #e8e2d3 100%);
+    border-radius: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .phone-notch {
+    position: absolute;
+    top: 14px; left: 50%;
+    transform: translateX(-50%);
+    width: 110px; height: 30px;
+    background: #0a0a0a;
+    border-radius: 0 0 18px 18px;
+    z-index: 5;
+  }
+  .phone-status {
+    position: absolute;
+    top: 18px; right: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a1a;
+    z-index: 4;
+  }
+
+  .notif-card {
+    position: absolute;
+    top: 80px; left: 16px; right: 16px;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(8px);
+    border-radius: 18px;
+    padding: 16px 18px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+    z-index: 3;
+  }
+  .notif-header {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: #666;
+    margin-bottom: 8px;
+  }
+  .notif-header .dot {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #d97757 0%, #b85e3e 100%);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .notif-title {
+    font-weight: 600;
+    color: #1a1a1a;
+    font-size: 19px;
+    margin-bottom: 4px;
+  }
+  .notif-body {
+    color: #333;
+    line-height: 1.4;
+    font-size: 16px;
+  }
+  .notif-check {
+    color: #2e8b57;
+    font-weight: 700;
+    margin-right: 6px;
+    font-size: 18px;
+  }
+
+  /* Annotation — handwritten label + curved arrow */
+  .annotation {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 360px; height: 160px;
+    transform: translate(-50%, -50%) translate(330px, -240px);
+    pointer-events: none;
+    z-index: 12;
+    opacity: 0;
+  }
+  .annotation .label {
+    position: absolute;
+    top: 0; left: 40px;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-style: italic;
+    font-size: 30px;
+    color: #1a1a1a;
+    white-space: nowrap;
+    text-shadow: 0 1px 2px rgba(250, 248, 243, 0.9);
+  }
+  .annotation svg {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    overflow: visible;
+  }
+  .annotation .arrow-path {
+    stroke: #1a1a1a;
+    stroke-width: 3;
+    fill: none;
+    stroke-linecap: round;
+    stroke-dasharray: 400;
+    stroke-dashoffset: 400;
+  }
+  .annotation .arrowhead {
+    fill: #1a1a1a;
+    opacity: 0;
+  }
+
+  /* Captions */
+  .captions {
+    position: absolute;
+    bottom: 160px; left: 60px; right: 60px;
+    text-align: center;
+    font-size: 36px;
+    color: #1a1a1a;
+    line-height: 1.3;
+    font-weight: 500;
+    z-index: 15;
+    text-shadow: 0 1px 2px rgba(250, 248, 243, 0.9);
+  }
+
+  /* Replay button */
+  .replay {
+    position: absolute;
+    bottom: 60px; left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a1a;
+    color: #faf8f3;
+    border: none;
+    padding: 16px 32px;
+    border-radius: 28px;
+    font-size: 22px;
+    font-weight: 500;
+    cursor: pointer;
+    z-index: 30;
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+  .replay:hover { background: #333; }
+</style>
+</head>
+<body>
+<div class="frame-wrapper">
+  <div class="frame">
+    <nav class="chapter-nav">
+      <span class="item" data-chapter="Intro">Intro</span>
+      <span class="item" data-chapter="Docs"><span class="num">1</span>Docs</span>
+      <span class="item" data-chapter="Setup"><span class="num">2</span>Setup</span>
+      <span class="item" data-chapter="Split"><span class="num">3</span>Split</span>
+      <span class="item" data-chapter="Skills"><span class="num">4</span>Skills</span>
+      <span class="item" data-chapter="Access"><span class="num">5</span>Access</span>
+      <div class="underline"></div>
+    </nav>
+
+    <div class="stage" id="stage">
+      <svg class="connections" id="connections" viewBox="-700 -700 1400 1400">
+        <!-- Lines from CRT center (0,0) to each icon center -->
+        <path id="line-settings" d="M 0 0 L -380 -180" />
+        <path id="line-docs"     d="M 0 0 L  380 -180" />
+        <path id="line-tree"     d="M 0 0 L -440  300" />
+        <path id="line-phone"    d="M 0 0 L    0  480" />
+        <path id="line-network"  d="M 0 0 L  440  300" />
+
+        <!-- Junction dots at midpoints -->
+        <circle class="junction" id="junc-settings" cx="-190" cy="-90"  r="7" />
+        <circle class="junction" id="junc-docs"     cx="190"  cy="-90"  r="7" />
+        <circle class="junction" id="junc-tree"     cx="-220" cy="150"  r="7" />
+        <circle class="junction" id="junc-phone"    cx="0"    cy="240"  r="7" />
+        <circle class="junction" id="junc-network"  cx="220"  cy="150"  r="7" />
+      </svg>
+
+      <div class="crt">
+        <div class="crt-body">
+          <div class="crt-screen">
+            <div class="screen-content">Installing<span class="blink"></span></div>
+          </div>
+        </div>
+        <div class="crt-base"></div>
+      </div>
+
+      <div class="keyboard"></div>
+
+      <div class="icon" id="icon-settings">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </div>
+      <div class="icon" id="icon-docs">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+      </div>
+      <div class="icon" id="icon-tree">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.5"/><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M12 7.5v3.5M12 11l-6 5.5M12 11l6 5.5"/></svg>
+      </div>
+      <div class="icon" id="icon-phone">
+        <svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2.5"/><line x1="12" y1="18.5" x2="12" y2="18.5"/></svg>
+      </div>
+      <div class="icon" id="icon-network">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 4 9 14 14 0 0 1-4 9 14 14 0 0 1-4-9 14 14 0 0 1 4-9z"/></svg>
+      </div>
+    </div>
+
+    <div class="stage-2" id="stage-2">
+      <div class="phone">
+        <div class="phone-notch"></div>
+        <div class="phone-status">9:41</div>
+        <div class="phone-screen">
+          <div class="notif-card" id="notif-card">
+            <div class="notif-header"><span class="dot"></span>Claude · now</div>
+            <div class="notif-title">Build complete</div>
+            <div class="notif-body"><span class="notif-check">✓</span>All five tips wired together. Ship it.</div>
+          </div>
+        </div>
+      </div>
+      <div class="annotation" id="annotation">
+        <svg viewBox="0 0 360 160" preserveAspectRatio="none">
+          <path class="arrow-path" id="arrow-path" d="M 80 80 Q 30 110, -40 60" />
+          <polygon class="arrowhead" id="arrowhead" points="-40,60 -22,52 -28,72" />
+        </svg>
+        <div class="label">real proof, not a mockup</div>
+      </div>
+    </div>
+
+    <div class="captions" id="captions">First we install. Watch the dependencies pull in.</div>
+
+    <button class="replay" id="replay">Replay</button>
+  </div>
+</div>
+
+<script>
+// Fit-frame helper — sets .frame's transform: scale() based on viewport.
+(function () {
+  const frame = document.querySelector('.frame');
+  if (!frame) return;
+  const apply = () => {
+    const s = Math.min(window.innerWidth / 1080, window.innerHeight / 1920);
+    frame.style.transform = 'scale(' + s + ')';
+  };
+  apply();
+  window.addEventListener('resize', apply);
+})();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script>
+  const stage = document.querySelector('#stage');
+  const stage2 = document.querySelector('#stage-2');
+  const notifCard = document.querySelector('#notif-card');
+  const annotation = document.querySelector('#annotation');
+  const arrowPath = document.querySelector('#arrow-path');
+  const arrowhead = document.querySelector('#arrowhead');
+  const captions = document.querySelector('#captions');
+  const replay = document.querySelector('#replay');
+
+  const icons = [
+    { id: '#icon-settings', line: '#line-settings', junc: '#junc-settings', tx: -380, ty: -180 },
+    { id: '#icon-docs',     line: '#line-docs',     junc: '#junc-docs',     tx:  380, ty: -180 },
+    { id: '#icon-tree',     line: '#line-tree',     junc: '#junc-tree',     tx: -440, ty:  300 },
+    { id: '#icon-phone',    line: '#line-phone',    junc: '#junc-phone',    tx:    0, ty:  480 },
+    { id: '#icon-network',  line: '#line-network',  junc: '#junc-network',  tx:  440, ty:  300 },
+  ];
+
+  function setChapterActive(name) {
+    document.querySelectorAll('.chapter-nav .item').forEach(el => {
+      el.classList.toggle('active', el.dataset.chapter === name);
+    });
+  }
+
+  function run() {
+    // Reset state — GSAP owns transforms (xPercent/yPercent for the centering trick)
+    gsap.set(stage, {
+      xPercent: -50, yPercent: -50,
+      x: 0, y: -180,
+      scale: 2.6, opacity: 1, filter: 'blur(0px)'
+    });
+    setChapterActive('Intro');
+
+    icons.forEach((it) => {
+      gsap.set(it.id, {
+        xPercent: -50, yPercent: -50,
+        x: it.tx, y: it.ty,
+        scale: 0.5, opacity: 0
+      });
+    });
+
+    // Stage 2 starts off-screen below
+    gsap.set(stage2, {
+      xPercent: -50, yPercent: -50,
+      x: 0, y: 1500,
+      scale: 0.85, opacity: 0
+    });
+    gsap.set(notifCard, { opacity: 0, y: 16 });
+    gsap.set(annotation, { opacity: 0 });
+    gsap.set(arrowPath, { strokeDashoffset: 400 });
+    gsap.set(arrowhead, { opacity: 0 });
+
+    gsap.set('.junction', { opacity: 0 });
+    gsap.set('.connections path', { strokeDashoffset: 1200 });
+    gsap.set(replay, { opacity: 0 });
+    captions.textContent = "First we install. Watch the dependencies pull in.";
+
+    const tl = gsap.timeline({ defaults: { ease: 'power2.inOut' } });
+
+    // Beat 1 — close-up hold (~2.5s)
+    tl.to({}, { duration: 2.5 });
+
+    // Beat 2 — caption swap + zoom out (~3s)
+    tl.call(() => {
+      captions.textContent = "Now zoom out — the CRT is one node in a larger system.";
+    });
+    tl.to(stage, { scale: 1, x: 0, y: 0, duration: 3 }, '<');
+
+    // Beat 3 — icons reveal in sequence with line-draws
+    tl.call(() => {
+      captions.textContent = "Five icons reveal — each one is a tip we cover next.";
+      setChapterActive('Docs');
+    }, null, '+=0.3');
+
+    icons.forEach((it, i) => {
+      tl.to(it.line, {
+        strokeDashoffset: 0,
+        duration: 0.7,
+        ease: 'power2.out'
+      }, i === 0 ? '+=0.2' : '+=0.15');
+
+      tl.to(it.junc, { opacity: 1, duration: 0.2 }, '<+=0.4');
+
+      tl.to(it.id, {
+        opacity: 1,
+        scale: 1,
+        duration: 0.5,
+        ease: 'back.out(1.8)'
+      }, '<+=0.2');
+    });
+
+    // Beat 4 — hold the node graph (~1.2s)
+    tl.to({}, { duration: 1.2 });
+
+    // Beat 5 — caption shift + simultaneous morph: stage 1 out (up + blur + fade),
+    //          stage 2 in (rise from below + scale up). 1.5s, fully overlapping.
+    tl.call(() => {
+      captions.textContent = "But that's just the setup — watch what builds.";
+      setChapterActive('Setup');
+    });
+    tl.to(stage, {
+      y: '-=900',
+      scale: 0.55,
+      opacity: 0.18,
+      filter: 'blur(10px)',
+      duration: 1.5,
+      ease: 'power2.inOut'
+    }, '<');
+    tl.to(stage2, {
+      y: 0,
+      scale: 1,
+      opacity: 1,
+      duration: 1.5,
+      ease: 'power2.inOut'
+    }, '<');
+
+    // Beat 6 — notif card materializes inside phone (~0.5s)
+    tl.call(() => {
+      captions.textContent = "Build complete. The proof shows up here.";
+    }, null, '+=0.1');
+    tl.to(notifCard, {
+      opacity: 1,
+      y: 0,
+      duration: 0.5,
+      ease: 'back.out(1.5)'
+    }, '<');
+
+    // Beat 7 — annotation: label fade + arrow draws in (~0.7s)
+    tl.to(annotation, { opacity: 1, duration: 0.3 }, '+=0.3');
+    tl.to(arrowPath, {
+      strokeDashoffset: 0,
+      duration: 0.6,
+      ease: 'power2.out'
+    }, '<+=0.1');
+    tl.to(arrowhead, { opacity: 1, duration: 0.15 }, '<+=0.5');
+
+    // Beat 8 — final hold + replay
+    tl.to({}, { duration: 1.6 });
+    tl.to(replay, { opacity: 1, duration: 0.4 });
+  }
+
+  // Initial run
+  run();
+  replay.addEventListener('click', run);
+</script>
+</body>
+</html>

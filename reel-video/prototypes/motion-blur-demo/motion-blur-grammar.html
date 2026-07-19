@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>reel-video.skill — motion_blur grammar version (validates YAML→GSAP path)</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #222;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .frame-wrapper {
+    position: fixed; inset: 0;
+    display: flex; justify-content: center; align-items: center;
+  }
+  .frame {
+    width: 1080px; height: 1920px;
+    background: #faf8f3;
+    background-image:
+      linear-gradient(rgba(160, 145, 110, 0.18) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(160, 145, 110, 0.18) 1px, transparent 1px);
+    background-size: 48px 48px;
+    position: relative;
+    overflow: hidden;
+    transform-origin: center center;
+    /* transform set by inline script below; CSS scale() can't reliably
+       coerce length-to-number across browsers. */
+    box-shadow: 0 0 40px rgba(0,0,0,0.4);
+  }
+  .title {
+    position: absolute;
+    top: 100px; left: 0; right: 0;
+    text-align: center;
+    font-size: 56px;
+    font-weight: 700;
+    color: #1a1a1a;
+    letter-spacing: -1.5px;
+  }
+  .subtitle {
+    position: absolute;
+    top: 180px; left: 0; right: 0;
+    text-align: center;
+    font-size: 28px;
+    color: #5a5a5a;
+    font-weight: 400;
+  }
+  .icon {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 280px; height: 280px;
+    border-radius: 32px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: #faf8f3;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    will-change: transform, filter, opacity;
+  }
+  .icon .glyph {
+    font-size: 96px;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .icon .label {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    opacity: 0.95;
+  }
+  .icon .form {
+    font-size: 16px;
+    font-weight: 400;
+    opacity: 0.75;
+    margin-top: 4px;
+    font-family: "Consolas", "Courier New", monospace;
+  }
+  .caption {
+    position: absolute;
+    bottom: 200px; left: 0; right: 0;
+    text-align: center;
+    font-size: 32px;
+    color: #1a1a1a;
+    font-weight: 500;
+    padding: 0 80px;
+  }
+  .replay {
+    position: absolute;
+    bottom: 100px; left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a1a; color: #faf8f3;
+    border: none; border-radius: 999px;
+    padding: 18px 44px;
+    font-size: 22px; font-weight: 600;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div class="frame-wrapper">
+  <div class="frame">
+    <div class="title">motion_blur</div>
+    <div class="subtitle">DESIGN.md item 14 — grammar-driven (interpreter)</div>
+
+    <div class="icon" id="icon-1" data-tx="-200" data-ty="-220" style="background:#5b8def;">
+      <div class="glyph">&#x2193;</div>
+      <div class="label">from top</div>
+      <div class="form">motion_blur: false</div>
+    </div>
+    <div class="icon" id="icon-2" data-tx="200"  data-ty="-220" style="background:#e85a4f;">
+      <div class="glyph">&#x2190;</div>
+      <div class="label">from right</div>
+      <div class="form">motion_blur: true</div>
+    </div>
+    <div class="icon" id="icon-3" data-tx="-200" data-ty="220"  style="background:#48a675;">
+      <div class="glyph">&#x2192;</div>
+      <div class="label">from left</div>
+      <div class="form">motion_blur: 12</div>
+    </div>
+    <div class="icon" id="icon-4" data-tx="200"  data-ty="220"  style="background:#b066d6;">
+      <div class="glyph">&#x2191;</div>
+      <div class="label">from bottom</div>
+      <div class="form">{ px:16, decay:false }</div>
+    </div>
+
+    <div class="caption" id="captions">Each icon flies in with a different motion_blur form.</div>
+    <button class="replay" id="replay">Replay</button>
+  </div>
+</div>
+
+<!-- Inlined YAML — the canonical motion-blur.yaml content. -->
+<script id="script-yaml" type="text/yaml">
+title: "motion_blur — DESIGN.md item 14 grammar test"
+
+scenes:
+  - id: scene-1
+    duration: 4.5
+    overlays:
+      - gesture: PLACE
+        element: icon-1
+        from: { x: 0, y: -1400 }
+        motion_blur: false
+        duration: 1.0
+        delay: 0.2
+        easing: power2.out
+
+      - gesture: PLACE
+        element: icon-2
+        from: { x: 1400, y: 0 }
+        motion_blur: true
+        duration: 1.0
+        delay: 1.0
+        easing: power2.out
+
+      - gesture: PLACE
+        element: icon-3
+        from: { x: -1400, y: 0 }
+        motion_blur: 12
+        duration: 1.0
+        delay: 1.8
+        easing: power2.out
+
+      - gesture: PLACE
+        element: icon-4
+        from: { x: 0, y: 1400 }
+        motion_blur: { px: 16, decay: false }
+        duration: 1.0
+        delay: 2.6
+        easing: power2.out
+</script>
+
+<script>
+// Fit-frame helper — sets .frame's transform: scale() based on viewport.
+(function () {
+  const frame = document.querySelector('.frame');
+  if (!frame) return;
+  const apply = () => {
+    const s = Math.min(window.innerWidth / 1080, window.innerHeight / 1920);
+    frame.style.transform = 'scale(' + s + ')';
+  };
+  apply();
+  window.addEventListener('resize', apply);
+})();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+<script src="../gesture-interpreter.js"></script>
+<script>
+  // Hand the inlined YAML to the interpreter; no manual GSAP here.
+  const yamlText = document.querySelector('#script-yaml').textContent;
+  GestureInterpreter.run(yamlText);
+</script>
+</body>
+</html>

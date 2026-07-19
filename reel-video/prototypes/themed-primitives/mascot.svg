@@ -1,0 +1,70 @@
+<svg viewBox="0 0 240 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Friendly mascot">
+  <defs>
+    <radialGradient id="bodyGrad" cx="40%" cy="35%" r="80%">
+      <stop offset="0%" stop-color="#f08d6c"/>
+      <stop offset="55%" stop-color="#d75a3c"/>
+      <stop offset="100%" stop-color="#a3392a"/>
+    </radialGradient>
+    <radialGradient id="cheekGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ff8a78" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#ff8a78" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4"/>
+      <feOffset dx="0" dy="6" result="off"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.4"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Antennae -->
+  <g stroke="#c44a30" stroke-width="3" stroke-linecap="round" fill="#c44a30">
+    <line x1="92" y1="78" x2="78" y2="38"/>
+    <circle cx="78" cy="38" r="6"/>
+    <line x1="148" y1="78" x2="162" y2="38"/>
+    <circle cx="162" cy="38" r="6"/>
+  </g>
+
+  <!-- Body -->
+  <g filter="url(#softShadow)">
+    <ellipse cx="120" cy="160" rx="92" ry="98" fill="url(#bodyGrad)"/>
+  </g>
+
+  <!-- Visible "gear" detail through the body -->
+  <g opacity="0.32" fill="#7a2618">
+    <circle cx="92" cy="200" r="22"/>
+    <circle cx="148" cy="200" r="22"/>
+    <circle cx="120" cy="225" r="14"/>
+  </g>
+  <!-- gear teeth on the two big circles -->
+  <g fill="#7a2618" opacity="0.32">
+    <rect x="89" y="172" width="6" height="8"/>
+    <rect x="89" y="220" width="6" height="8"/>
+    <rect x="68" y="197" width="8" height="6"/>
+    <rect x="108" y="197" width="8" height="6"/>
+    <rect x="145" y="172" width="6" height="8"/>
+    <rect x="145" y="220" width="6" height="8"/>
+    <rect x="124" y="197" width="8" height="6"/>
+    <rect x="164" y="197" width="8" height="6"/>
+  </g>
+
+  <!-- Eyes -->
+  <ellipse cx="98" cy="138" rx="13" ry="16" fill="#fff7ee"/>
+  <ellipse cx="142" cy="138" rx="13" ry="16" fill="#fff7ee"/>
+  <circle cx="100" cy="142" r="6" fill="#1a1a1a"/>
+  <circle cx="144" cy="142" r="6" fill="#1a1a1a"/>
+  <!-- eye gleams -->
+  <circle cx="103" cy="138" r="2" fill="white"/>
+  <circle cx="147" cy="138" r="2" fill="white"/>
+
+  <!-- Cheeks -->
+  <ellipse cx="78" cy="170" rx="14" ry="9" fill="url(#cheekGrad)"/>
+  <ellipse cx="162" cy="170" rx="14" ry="9" fill="url(#cheekGrad)"/>
+
+  <!-- Smile -->
+  <path d="M 96 175 Q 120 188 144 175" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round" fill="none"/>
+
+  <!-- Side arms (subtle) -->
+  <line x1="40" y1="160" x2="22" y2="118" stroke="#a3392a" stroke-width="6" stroke-linecap="round"/>
+  <line x1="200" y1="160" x2="218" y2="118" stroke="#a3392a" stroke-width="6" stroke-linecap="round"/>
+</svg>
