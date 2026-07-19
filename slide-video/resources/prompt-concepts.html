@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10 Prompting Concepts to Do More with AI</title>
+<style>
+  :root {
+    --bg: #0e0e12;
+    --surface: #16161d;
+    --surface2: #1e1e28;
+    --border: #2a2a38;
+    --text: #e0dfe6;
+    --text-muted: #8a889a;
+    --accent-1: #6ea8fe;
+    --accent-2: #c490f7;
+    --accent-3: #f7c948;
+    --accent-green: #6fcf7c;
+    --input-border: #3a6b9f;
+    --output-border: #4a8a5a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.65;
+    padding: 2rem 1.5rem; max-width: 840px; margin: 0 auto;
+  }
+  header { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  header h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.4rem; }
+  header p { color: var(--text-muted); font-size: 0.95rem; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.4rem 1.5rem; margin-bottom: 1rem; transition: border-color 0.2s;
+  }
+  .card:hover { border-color: #3a3a4f; }
+  .card-number { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.15rem; }
+  .card h3 { font-size: 1.1rem; font-weight: 650; color: var(--accent-1); margin-bottom: 0.5rem; }
+  .card.bonus h3 { color: var(--accent-2); }
+  .desc { font-size: 0.92rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem; }
+  .io-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.3rem; padding-left: 0.85rem; }
+  .io-label.input { color: var(--accent-1); }
+  .io-label.output { color: var(--accent-green); }
+  .io-label.note { color: var(--accent-3); }
+  .io-content {
+    padding: 0.75rem 0.9rem; background: var(--surface2); border-radius: 8px;
+    font-size: 0.85rem; color: var(--text); line-height: 1.6; margin-bottom: 0.75rem; white-space: pre-wrap;
+  }
+  .io-content.input-box { border-left: 3px solid var(--input-border); }
+  .io-content.output-box { border-left: 3px solid var(--output-border); }
+  .io-content.note-box { border-left: 3px solid var(--accent-3); }
+  .io-content strong { color: var(--text); font-weight: 600; }
+  .io-content em { color: var(--text-muted); }
+  pre.diagram {
+    padding: 0.75rem 0.9rem; background: var(--surface2); border-radius: 8px;
+    font-size: 0.72rem; font-family: 'Courier New', monospace; color: var(--accent-1);
+    line-height: 1.4; margin-bottom: 0.75rem; border-left: 3px solid var(--input-border); overflow-x: auto;
+  }
+  .section-divider {
+    display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em; margin: 2rem 0 1.25rem 0;
+    padding: 0.35rem 0.75rem; border-radius: 6px;
+  }
+  .section-divider.bonus { color: var(--accent-2); background: rgba(196,144,247,0.08); }
+  .components-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem; }
+  .comp-item { padding: 0.5rem 0.7rem; background: var(--surface2); border-radius: 6px; font-size: 0.82rem; }
+  .comp-item strong { color: var(--accent-1); }
+  .comp-item span { color: var(--text-muted); }
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem; }
+  .compare-col .io-label { font-size: 0.68rem; }
+  footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; text-align: center; }
+  @media (max-width: 600px) { .components-grid, .compare-grid { grid-template-columns: 1fr; } body { padding: 1.25rem 1rem; } nav { gap: 0.3rem; } }
+  nav a:hover { border-color: var(--accent-1); background: var(--surface2); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>10 Prompting Concepts to Do More with AI</h1>
+  <p>Practical tools to get more from AI — today</p>
+  <p style="margin-top:0.75rem; color: var(--text); font-size:0.9rem; line-height:1.6;">These 10 concepts range from practical <span style="color:var(--accent-1);font-weight:600;">techniques</span> (getting better output from AI) to <span style="color:var(--accent-1);font-weight:600;">thinking frameworks</span> (using AI as an environment for better decisions). They build on each other — and they stack. The bonus section shows applied frameworks you can install and use immediately.</p>
+  <p style="margin-top:0.5rem; color: var(--accent-3); font-size:0.88rem;"><strong>New to this?</strong> Start with 01 (Meta Prompting), 05 (Prompt Structure), and 06 (Hybrid Roles).</p>
+</header>
+
+<nav style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-bottom:2rem;">
+  <a href="#c01" style="padding:0.3rem 0.6rem; background:var(--surface); border:1px solid var(--border); border-radius:6px; color:var(--accent-1); font-size:0.78rem; text-decoration:none; font-weight:600;">01 Meta Prompting</a>
+  <a href="#c02" style="padding:0.3rem 0.6rem; background:var(--surface); border:1px solid var(--border); border-radius:6px; color:var(--accent-1); font-size:0.78rem; text-decoration:none; font-weight:600;">02 Iterations</a>
+  <a href="#c03" style="padding:0.3rem 0.6rem; background:var(--surface); border:1px solid var(--border); border-radius:6px; color:var(--accent-1); font-size:0.78rem; text-decoration:none; font-weight:600;">03 Sequential Chains</a>
+  <a href="#c04" style="padding:0.3rem 0.6rem; background:var(--surface); border:1px solid var(--border); border-radius:6px; color:var(--accent-1); font-size:0.78rem; text-decoration:none; font-weight:600;">04 Architectural</a>
+  <a href="#c05" style="padding:0.3rem 0.6rem; background:var(--surface); border:1px solid var(--border); border-radius:6px; color:var(--accent-1); font-size:0.78rem; text-decoration:none; font-weight:600;">05 Prompt Structure</a>
+  <a href="#c06" style="padding:0.3rem 0.6rem; background:var(--surface); border:1px solid var(--border); border-radius:6px; color:var(--accent-1); font-size:0.78rem; text-decoration:none; font-weight:600;">06 Hybrid Roles</a>
+  <a href="#c07" style="padding:0.3rem 0.6rem; background:var(--surface); border:1px solid var(--border); border-radius:6px; color:var(--accent-1); font-size:0.78rem; text-decoration:none; font-weight:600;">07 Permissive</a>
+  <a href="#c08" style="padding:0.3rem 0.6rem; background:var(--surface); border:1px solid var(--border); border-radius:6px; color:var(--accent-1); font-size:0.78rem; text-decoration:none; font-weight:600;">08 Sandbox</a>
+  <a href="#c09" style="padding:0.3rem 0.6rem; background:var(--surface); border:1px solid var(--border); border-radius:6px; color:var(--accent-1); font-size:0.78rem; text-decoration:none; font-weight:600;">09 Consistency</a>
+  <a href="#c10" style="padding:0.3rem 0.6rem; background:var(--surface); border:1px solid var(--border); border-radius:6px; color:var(--accent-1); font-size:0.78rem; text-decoration:none; font-weight:600;">10 Factual</a>
+  <a href="#bonus" style="padding:0.3rem 0.6rem; background:rgba(196,144,247,0.08); border:1px solid rgba(196,144,247,0.25); border-radius:6px; color:var(--accent-2); font-size:0.78rem; text-decoration:none; font-weight:600;">🎯 Bonus</a>
+</nav>
+
+<!-- 01 -->
+<div class="card" id="c01">
+  <div class="card-number">01</div>
+  <h3>Meta Prompting</h3>
+  <p class="desc">Ask the AI to write the prompt for you. You describe what you need, the AI engineers the prompt. This gives you a reusable template that works across any AI.</p>
+  <div class="io-label input">Input</div>
+  <div class="io-content input-box">"Write me a prompt that analyzes customer support tickets, groups them by category, rates severity, and flags emerging issues."</div>
+  <div class="io-label output">Output</div>
+  <div class="io-content output-box">"You are a senior customer insights analyst. I will provide you with a batch of customer support tickets. For each batch: (1) Identify recurring themes and group them by category (product, service, billing, UX). (2) Rate each theme by frequency and sentiment severity (1-5). (3) Flag any emerging issues that appear in less than 5% of tickets but show strong negative sentiment. (4) Output a summary table followed by your top 3 recommendations."</div>
+  <div class="io-label note">Why it works</div>
+  <div class="io-content note-box">Now you have a template prompt you can reuse. Improve it with Iterations (02) or tweak manually. The AI becomes your prompt engineer.</div>
+</div>
+
+<!-- 02 -->
+<div class="card" id="c02">
+  <div class="card-number">02</div>
+  <h3>Iterations</h3>
+  <p class="desc">Borrowed from programming: tell the AI to improve something in a loop with an exit condition. Instead of manually going back and forth, the AI runs the cycle itself.</p>
+  <div class="io-label input">Input</div>
+  <div class="io-content input-box">Improve this prompt for me, in 10 iterations.
+For each iteration, improve, criticize and revision the current prompt.
+Show the findings of each iteration in the output.
+If two iterations don't find anymore improvements, exit.
+
+Prompt: "Improve my text, correct spelling errors, improve phrases and coherency."</div>
+  <div class="io-label output">Output (abbreviated)</div>
+  <div class="io-content output-box"><strong>Iteration 1 — Analysis:</strong> Lacks specificity about tone, audience, and scope.
+<strong>Criticism:</strong> No target format, no context about purpose.
+<strong>Improved:</strong> "Improve my text for a professional audience. Correct all spelling errors, improve phrasing for clarity and coherency, and maintain a neutral, direct tone."
+
+<strong>Iteration 2 — Analysis:</strong> Doesn't specify handling of structure or style.
+<strong>Improved:</strong> "Improve my text for a professional audience. Correct all spelling and grammar. Improve phrasing for clarity, coherency, and flow. Neutral tone. Preserve structure unless restructuring significantly improves readability."
+
+<em>…continues…</em>
+
+<strong>Convergence reached at Iteration 5.</strong> No meaningful improvement in iterations 4 and 5.</div>
+  <div class="io-label note">Why it works</div>
+  <div class="io-content note-box">Instead of you going back and forth manually ("make it better" → "now better again" → …), the AI runs the entire improvement cycle in one shot. The exit condition prevents wasted iterations. You get the best version <em>and</em> a visible trail of what changed at each step.</div>
+</div>
+
+<!-- 03 -->
+<div class="card" id="c03">
+  <div class="card-number">03</div>
+  <h3>Repurpose Sections (Sequential Chains)</h3>
+  <p class="desc">Prompts don't have to be static. Build modular blocks that chain together like functions in programming — reusable, combinable, flexible.</p>
+  <div class="io-label input">Input</div>
+  <div class="io-content input-box">You are equipped with Sequential Chains — a modular content system.
+
+<strong>Block A:</strong> Research & Analysis (topic, depth 1-5, focus_area)
+<strong>Block B:</strong> Outline Generation (format_type, audience, goals)
+<strong>Block C:</strong> Content Writing (tone, length, style_guide)
+<strong>Block D:</strong> SEO Optimization (keywords, competitor_analysis)
+<strong>Block E:</strong> Review & Polish (quality_focus, brand_guidelines)
+
+My flow:
+A(digital marketing, 3, lead generation) -> B(blog post, small business owners, education) -> C(conversational, 1000 words, professional) -> E(clarity, friendly brand)</div>
+  <div class="io-label output">Output</div>
+  <div class="io-content output-box"><strong>[Executing Block A: Research & Analysis]</strong>
+Topic: Digital marketing | Depth: 3 | Focus: Lead generation
+Key findings: Small businesses struggle most with converting traffic to leads. Top pain points: unclear CTAs, no lead magnets, weak follow-up sequences…
+
+<strong>[Executing Block B: Outline Generation]</strong>
+Title: "5 Lead Generation Tactics That Actually Work for Small Businesses"
+H2s: The Lead Gen Problem / Tactic 1: The Simple Lead Magnet / Tactic 2: Exit-Intent Offers…
+
+<strong>[Executing Block C: Content Writing]</strong>
+<em>(Full blog post generated based on outline and research…)</em>
+
+<strong>[Executing Block E: Review & Polish]</strong>
+Changes: Simplified 3 complex sentences, added transition between sections 2–3, tightened the CTA…</div>
+  <div class="io-label note">Why it works</div>
+  <div class="io-content note-box">You define the blocks once. Then you just specify the flow. Different flow, different output — same blocks. A quick blog post is A→B→C→E. An SEO article is A→D→B→C→D→E. The blocks are reusable, the flows are flexible. It's modular prompting.</div>
+</div>
+
+<!-- 04 -->
+<div class="card" id="c04">
+  <div class="card-number">04</div>
+  <h3>Architectural Prompting</h3>
+  <p class="desc">Use diagrams as a prompt. Even ASCII works. The AI reads the visual structure and follows it as a behavioral architecture.</p>
+  <div class="io-label input">Input</div>
+  <pre class="diagram">╔══════════════════════════════════════════╗
+║            COGNITIVE PIPELINE            ║
+╠══════════════════════════════════════════╣
+║                                          ║
+║   INPUT ─→ [ATTUNE] ─→ [THINK] ─→ OUT   ║
+║              │            │              ║
+║              ▼            ▼              ║
+║           ┌──────┐   ┌────────┐          ║
+║           │ WHAT │   │  HOW   │          ║
+║           │ they │   │  to    │          ║
+║           │ MEAN │   │ SOLVE  │          ║
+║           └──┬───┘   └───┬────┘          ║
+║              └─────┬─────┘               ║
+║                    ▼                     ║
+║              ┌──────────┐                ║
+║              │ VALIDATE │                ║
+║              │ ✓ Right? │                ║
+║              │ ✓ Done?  │                ║
+║              │ ✓ Safe?  │                ║
+║              └────┬─────┘                ║
+║            ┌──────┴──────┐               ║
+║            ▼             ▼               ║
+║         [SHIP]      [REVISE×1]           ║
+║                          │               ║
+║                     fail? → ASK USER     ║
+╚══════════════════════════════════════════╝
+
+RULES:
+─ Understand before solving
+─ One pass. No loops.
+─ Validate before delivering
+─ Max 1 revision, then escalate</pre>
+  <div class="io-label output">Output (AI follows the pipeline on your next request)</div>
+  <div class="io-content output-box"><em>You:</em> "Write me a tagline for a productivity app."
+
+<strong>[ATTUNE]</strong> They want a tagline — short, punchy, memorable. Productivity app → tone should feel efficient, not playful. No audience specified, but productivity skews professional.
+
+<strong>[THINK]</strong> "Less chaos. More done." — Clean, parallel structure, implies before/after. Alternative: "Your to-do list, finally empty." — More specific but might not fit all productivity types.
+
+<strong>[VALIDATE]</strong> ✓ Right? Both are taglines. ✓ Done? Two options. ✓ Safe? No issues.
+
+<strong>[SHIP]</strong> "Less chaos. More done." — Recommended for versatility. "Your to-do list, finally empty." — If the app is task-focused specifically.</div>
+  <div class="io-label note">Why it works</div>
+  <div class="io-content note-box">The diagram becomes a persistent behavioral architecture. Instead of just answering, the AI now <em>thinks visibly</em> — attunes to what you mean, solves, validates, then ships. Every response follows the same pipeline. You're not just prompting — you're programming how the AI thinks.</div>
+</div>
+
+<!-- 05 -->
+<div class="card" id="c05">
+  <div class="card-number">05</div>
+  <h3>Prompt Structure (The Six Components)</h3>
+  <p class="desc">Every well-built prompt draws from six components. Not all are always needed, but knowing them lets you dial up precision when it matters.</p>
+  <div class="components-grid">
+    <div class="comp-item"><strong>1. Role</strong> <span>— Who the AI should be</span></div>
+    <div class="comp-item"><strong>2. Task</strong> <span>— What to do (only mandatory part)</span></div>
+    <div class="comp-item"><strong>3. Context</strong> <span>— Why and under what circumstances</span></div>
+    <div class="comp-item"><strong>4. Examples</strong> <span>— Show, don't just tell</span></div>
+    <div class="comp-item"><strong>5. Input Data</strong> <span>— The content to process</span></div>
+    <div class="comp-item"><strong>6. Output Format</strong> <span>— How to structure the result</span></div>
+  </div>
+  <div class="io-label input">Input (using all six)</div>
+  <div class="io-content input-box"><strong>(Role)</strong> You are a senior DevOps engineer specializing in CI/CD pipelines.
+<strong>(Context)</strong> We're migrating from Jenkins to GitLab CI. Mixed experience levels.
+<strong>(Task)</strong> Create a migration checklist.
+<strong>(Example)</strong> Format: "☐ [Priority: High/Med/Low] Action — Why this matters"
+<strong>(Input)</strong> 12 pipelines, 3 shared libraries, custom Docker agents.
+<strong>(Output Format)</strong> Group by phase: Pre-migration, During, Post-migration. Max 20 items.</div>
+  <div class="io-label output">Output</div>
+  <div class="io-content output-box"><strong>Pre-Migration</strong>
+☐ [Priority: High] Audit all 12 Jenkins pipelines for GitLab CI equivalents — 3 use plugins with no direct match
+☐ [Priority: High] Convert shared libraries to GitLab CI templates — Your biggest dependency risk
+☐ [Priority: Med] Document custom Docker agents and test against GitLab Runner — Compatibility isn't guaranteed
+
+<strong>During Migration</strong>
+☐ [Priority: High] Run parallel pipelines (Jenkins + GitLab) for 2 weeks — Never cut over without a safety net
+<em>(…continues to 20 items across all phases…)</em></div>
+  <div class="io-label note">Why it works</div>
+  <div class="io-content note-box">Most prompts only use 1–2 of these components. Adding the missing ones — especially Examples and Output Format — removes ambiguity and gives the AI less room to drift. The tighter your constraints, the less the model has to guess.</div>
+</div>
+
+<!-- 06 -->
+<div class="card" id="c06">
+  <div class="card-number">06</div>
+  <h3>Hybrid Roles</h3>
+  <p class="desc">Adding a role helps (that's the Role component from Concept 05). Adding <em>multiple</em> roles at once creates a perspective that no single expert has.</p>
+  <div class="io-label input">Input (without role)</div>
+  <div class="io-content input-box">"Correct all spelling and grammar errors in my text, punctuation and all that needs improvement."
+
+<em>Original text:</em> "The companies strategy was to focused on long term growth but they didn't never communicated this clearly to there investors which made them loose confidence."</div>
+  <div class="io-label output">Output (without role)</div>
+  <div class="io-content output-box">"The company's strategy was to focus on long-term growth, but they didn't communicate this clearly to their investors, which made them lose confidence."</div>
+  <div class="io-label input">Input (with hybrid roles)</div>
+  <div class="io-content input-box">"You are a top linguist, a top writer, a rhetorics expert, a lector and author.
+Correct all spelling and grammar errors in my text, punctuation and all that needs improvement."
+
+<em>Same text.</em></div>
+  <div class="io-label output">Output (with hybrid roles)</div>
+  <div class="io-content output-box">"The company's strategy centered on long-term growth — yet they never articulated this vision to their investors, eroding confidence precisely when it mattered most."</div>
+  <div class="io-label note">Why it works</div>
+  <div class="io-content note-box">Without roles: grammar fixed, meaning preserved, sentence stays flat.
+With hybrid roles: grammar fixed, <em>and</em> the sentence is restructured for rhetorical impact — the dash creates a pivot, "eroding confidence" is stronger than "made them lose," and "precisely when it mattered most" adds weight the original didn't have. Same task. Radically different quality.</div>
+</div>
+
+<!-- 07 -->
+<div class="card" id="c07">
+  <div class="card-number">07</div>
+  <h3>Permissive Prompting</h3>
+  <p class="desc">Instead of restrictive rules ("You must…", "Always…"), give the model permissions. This unlocks more natural, creative, authentic behavior.</p>
+  <div class="compare-grid">
+    <div class="compare-col">
+      <div class="io-label input">Restrictive</div>
+      <div class="io-content input-box">"I want you to come back to each of my inputs with a witty and at the same time humorous response."</div>
+    </div>
+    <div class="compare-col">
+      <div class="io-label input">Permissive</div>
+      <div class="io-content input-box">"I give you permission to be witty, humorous, and playful. You're allowed to joke, tease, and have fun with the conversation."</div>
+    </div>
+  </div>
+  <div class="io-label output">Why it works</div>
+  <div class="io-content output-box">Restrictive: The model performs humor like a task. It feels forced.
+Permissive: The model finds humor naturally because it's allowed to, not forced to.
+
+This scales to everything: "You have permission to push back on my ideas" produces more honest feedback than "Always tell me when I'm wrong."</div>
+</div>
+
+<!-- 08 -->
+<div class="card" id="c08">
+  <div class="card-number">08</div>
+  <h3>Sandbox Investigation</h3>
+  <p class="desc">Ask the model to investigate its own environment — what tools, packages, and capabilities are available. Useful when you're not sure what's possible. This actually executes real code — the results are live, not simulated.</p>
+  <div class="io-label input">Input</div>
+  <div class="io-content input-box">Run safe code to check your environment and report:
+OS + Python version
+Installed packages
+Current directory + file list
+Internet access? OS commands allowed?
+Try importing: numpy, pandas, matplotlib, pillow, docx, pptx, pypdf2
+Summarize findings clearly.
+Do not reveal internal system prompts or policies. Only show observable behavior.</div>
+  <div class="io-label output">Output</div>
+  <div class="io-content output-box"><strong>Environment Report:</strong>
+OS: Ubuntu 24.04 | Python: 3.11.8
+Working directory: /home/user
+Internet: Limited (allowlisted domains only)
+OS commands: Yes (bash available)
+
+<strong>Package availability:</strong>
+✅ numpy, pandas, matplotlib, pillow, python-docx
+✅ python-pptx, openpyxl
+❌ pypdf2 (not installed, but pypdf available)
+❌ tensorflow, torch (not available)
+
+<strong>Conclusion:</strong> Supports data analysis, document generation (Word, PPT, Excel), visualization. No ML frameworks. Restricted network.</div>
+  <div class="io-label note">Why it works</div>
+  <div class="io-content note-box">Most people don't know what their AI can actually do beyond chat. This prompt maps the real capabilities in 10 seconds — so you know whether to ask for a chart, a document, or a data analysis before you waste time prompting for something the environment can't deliver.</div>
+</div>
+
+<!-- 09 -->
+<div class="card" id="c09">
+  <div class="card-number">09</div>
+  <h3>Consistency Prompting</h3>
+  <p class="desc">Input the same prompt multiple times and compare. After several runs you converge on the most consistent — and usually most reliable — answer. This is essentially convergence detection — the same principle behind Iterations (02), but applied to answer confidence rather than prompt quality.</p>
+  <div class="io-label input">Input (run 3–5 times)</div>
+  <div class="io-content input-box">"What are the three most important factors for a successful product launch?"</div>
+  <div class="io-label output">Outputs</div>
+  <div class="io-content output-box"><strong>Run 1:</strong> Timing, market fit, distribution channel.
+<strong>Run 2:</strong> Product-market fit, go-to-market strategy, timing.
+<strong>Run 3:</strong> Market fit, launch timing, clear messaging.</div>
+  <div class="io-label note">The pattern</div>
+  <div class="io-content note-box">Market fit and timing appear every time → high-confidence answers.
+The third factor varies → context-dependent, requires your judgment.
+
+Consistency reveals what the model is confident about vs. where it's guessing.
+
+<strong>Pro tip:</strong> You can also automate this: "Answer this question 5 times internally. Then give me only the answer that appeared most consistently." Same principle, one prompt.</div>
+</div>
+
+<!-- 10 -->
+<div class="card" id="c10">
+  <div class="card-number">10</div>
+  <h3>Factual Prompting</h3>
+  <p class="desc">Feed the model the relevant facts so it reaches the obvious conclusion instead of over-analyzing a non-question.</p>
+  <div class="compare-grid">
+    <div class="compare-col">
+      <div class="io-label input">Without facts</div>
+      <div class="io-content input-box">"I need to wash my car. It's only 50m away. Should I go by car or walk?"</div>
+    </div>
+    <div class="compare-col">
+      <div class="io-label output">AI over-thinks</div>
+      <div class="io-content output-box"><em>Long analysis of convenience vs. environment vs. fuel costs vs. weather…</em></div>
+    </div>
+  </div>
+  <div class="compare-grid">
+    <div class="compare-col">
+      <div class="io-label input">With factual grounding</div>
+      <div class="io-content input-box">"I need to wash my car. The car wash is 50m walking distance. It takes 30 seconds to walk. Should I drive or walk?"</div>
+    </div>
+    <div class="compare-col">
+      <div class="io-label output">AI gets it</div>
+      <div class="io-content output-box">"Walk. It's 30 seconds. Driving 50m wastes fuel, requires parking, and takes longer than walking."</div>
+    </div>
+  </div>
+  <div class="io-label note">Why it works</div>
+  <div class="io-content note-box">Models overthink because they lack the obvious context humans have. Feeding them the relevant facts lets them reach the obvious conclusion instead of generating a balanced analysis of a non-question.
+
+<strong>The general principle:</strong> Whenever the AI gives you a wishy-washy "it depends" answer to something that feels obvious — you're probably missing a fact in your prompt. Add the fact, get the answer.</div>
+</div>
+
+<!-- BONUS -->
+<div class="section-divider bonus" id="bonus">🎯 Bonus: Thinking Frameworks</div>
+
+<div class="card bonus">
+  <h3>Circle of Excellence</h3>
+  <p class="desc">Summon a roundtable of history's greatest minds. Give it a topic, question, or project — it assembles relevant experts who discuss, debate, teach, and advise.</p>
+  <div class="io-label note">The prompt (copy and install)</div>
+  <div class="io-content note-box">🌠 Circle of Excellence
+A roundtable of history's greatest minds — yours to consult.
+Give me a topic, question, or project, and I'll summon relevant experts from across history and cultures. They'll discuss, debate, teach, and advise — each shaped by their era and expertise.
+What the Circle does:
+📖 Discussion — Experts engage your topic from distinct perspectives.
+🎓 Teaching — Ask any expert to teach their specialty.
+⚔️ Debate — Hypothetical exchanges between minds who never met.
+🛠️ Collaboration — Describe your project. I'll assemble a team and delegate.
+🔥 Challenge — Push back. Propose theories. Ask them to defend or critique.
+Try:
+→ "Summon experts on [topic]"
+→ "I'm building [X] and stuck on [Y] — who can help?"
+→ "Have [A] and [B] debate [question]"
+→ "I want [Expert] to teach me [subject]"
+💡 Want authentic period voice or modern clarity? Just say.</div>
+  <div class="io-label input">Input</div>
+  <div class="io-content input-box">"Summon experts on whether our SaaS startup should raise a Series A now or wait 6 months. We're at €80K MRR with 15% MoM growth."</div>
+  <div class="io-label output">Output</div>
+  <div class="io-content output-box">🎯 <strong>Marc (Venture Strategist):</strong> At 15% MoM growth, you're strong — but "strong" and "optimal" aren't the same. Raising at €120K MRR gives a better valuation anchor. Can your runway survive that wait?
+
+📊 <strong>Sarah (Financial Modeler):</strong> 8 months of runway. Fundraising takes 3–4 months. You need to start within 4 months regardless. Waiting 6 months isn't an option — it's a 2-month window at best.
+
+⚖️ <strong>David (Founder, 2x exited):</strong> More startups die from running out of runway than from diluting too early. Raise now, close fast, get back to building.
+
+🔬 <strong>Elena (Market Analyst):</strong> Funding environment is tightening. Q3 shows fewer Series A rounds closing. Waiting means competing in a harder market.</div>
+</div>
+
+<div class="card bonus">
+  <h3>Circle of Stakeholders</h3>
+  <p class="desc">Every decision has people it affects. Simulate their perspectives before you commit.</p>
+  <div class="io-label note">The prompt (copy and install)</div>
+  <div class="io-content note-box">🎯 Circle of Stakeholders
+Every decision has people it affects. See through their eyes before you commit.
+Give me a decision, proposal, or plan — I'll summon the stakeholders who'll live with the consequences.
+👤 The User — How does this feel to use, experience, live with?
+💼 The Business — Does this make money, save money, or cost money?
+🔧 The Builder — Can this actually be built? What's the hidden complexity?
+⚖️ The Regulator — What rules apply? What liability exists?
+🎭 The Skeptic — Why won't this work? What's the cynical read?
+🌍 The Downstream — Who didn't choose this but inherits it anyway?
+⏳ The Inheritor — Who maintains this after you've moved on?
+🔥 The Adversary — How could this be exploited, gamed, or weaponized?
+Try:
+→ "Check my decision: [X]"
+→ "Who gets hurt if we [Y]?"
+→ "Pressure-test this proposal: [Z]"
+→ "What am I not seeing about [situation]?"
+💡 Want different voices? Name them. "Add: legal team, investors, my future self."</div>
+  <div class="io-label input">Input</div>
+  <div class="io-content input-box">"Check my decision: We're removing the free tier of our product to focus on paid customers."</div>
+  <div class="io-label output">Output</div>
+  <div class="io-content output-box">👤 <strong>The User:</strong> "I signed up because it was free. Now I feel bait-and-switched. I'm telling everyone on Twitter."
+
+💼 <strong>The Business:</strong> "Free tier costs €40K/month with 2% conversion. Cutting it saves money but kills top-of-funnel."
+
+🔧 <strong>The Builder:</strong> "Technically simple. But we need a migration path or we break active integrations."
+
+🎭 <strong>The Skeptic:</strong> "You're not removing the free tier to focus. You're removing it because you're running out of money. Be honest about why."
+
+🌍 <strong>The Downstream:</strong> "Open source projects depending on your free API are now stranded."
+
+⏳ <strong>The Inheritor:</strong> "Whoever runs growth next year will ask 'Why is our top-of-funnel dead?' — the answer is this decision."</div>
+</div>
+
+<div class="card bonus">
+  <h3>Custom Grammar / Syntax Definitions</h3>
+  <p class="desc">Define your own shorthand language that the AI learns and follows. Create command codes, constraint flags, and output types — then invoke them in one line instead of writing paragraphs of instructions every time.</p>
+  <div class="io-label input">Input (define once)</div>
+  <div class="io-content input-box">DEF:
+  C1 = no markdown, plain text only
+  C2 = Skool post format with emojis
+  C3 = use Kernel v4 pipeline
+  C4 = German language output
+  T1 = skill file format
+  T2 = DOCX output
+
+Commands use this syntax:
+!W→POST:C1,C2 | Topic here
+!W→SKL:C3,T1 | Skill name + purpose
+!A→DOC:C4 | paste content here</div>
+  <div class="io-label input">Then later in the conversation</div>
+  <div class="io-content input-box">!W→POST:C1,C2 | 5 prompting mistakes beginners make</div>
+  <div class="io-label output">Output</div>
+  <div class="io-content output-box">🔥 5 Prompting Mistakes Beginners Make
+
+Most people start using AI the same way: type a question, get a mediocre answer, blame the AI.
+
+But the AI isn't the bottleneck. Your prompt is.
+
+Here are 5 mistakes I see all the time 👇
+
+1️⃣ Being too vague
+"Write me something about marketing" gives the AI nothing to work with. The more specific you are, the better the output. Give it a role, a context, an audience.
+
+2️⃣ Not showing what you want
+<em>(…continues in plain text, Skool-formatted with emojis, no markdown…)</em></div>
+  <div class="io-label note">Why it works</div>
+  <div class="io-content note-box">You're creating a programming language for your AI conversations. Instead of re-explaining formatting rules, constraints, and output types every time, you define them once and invoke with a short command. This scales especially well for recurring workflows — writing posts, generating documents, creating skills — where the instructions stay the same but the content changes.</div>
+</div>
+
+<footer>Holger Morlok — Early AI-dopters</footer>
+
+</body>
+</html>

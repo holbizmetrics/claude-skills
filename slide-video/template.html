@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{TITLE}}</title>
+
+<!-- Animation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+<!-- Math (KaTeX) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {delimiters: [
+    {left: '$$', right: '$$', display: true},
+    {left: '$',  right: '$',  display: false},
+    {left: '\\[', right: '\\]', display: true},
+    {left: '\\(', right: '\\)', display: false}
+  ]});"></script>
+
+<!-- Diagrams (Mermaid) -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+
+<!-- Code highlighting (highlight.js) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.10.0/build/styles/atom-one-dark.min.css">
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.10.0/build/highlight.min.js"></script>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg-base: #0a0a1a;
+    --fg: #f0f0f5;
+    --fg-muted: rgba(240, 240, 245, 0.7);
+    --fg-dim: rgba(255, 255, 255, 0.4);
+    --green: #48c78e;
+    --purple: #a878ff;
+    --blue: #64a0ff;
+    --orange: #ff9f43;
+    --red: #ff6b6b;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--bg-base);
+    color: var(--fg);
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    cursor: default;
+  }
+
+  /* ========== SLIDE FRAME ========== */
+  .slide {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 6vw 8vw;
+    opacity: 0;
+    visibility: hidden;
+    text-align: center;
+  }
+  .slide.active { opacity: 1; visibility: visible; }
+
+  /* Default + named-section gradients (backward compat with v1) */
+  .slide                                 { background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%); }
+  .slide[data-section="intro"]           { background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 100%); }
+  .slide[data-section="meta"]            { background: linear-gradient(135deg, #0a0a1a 0%, #1e3a2f 100%); }
+  .slide[data-section="iterations"]      { background: linear-gradient(135deg, #0a0a1a 0%, #2a1a3e 100%); }
+  .slide[data-section="structure"]       { background: linear-gradient(135deg, #0a0a1a 0%, #1a2a3e 100%); }
+  .slide[data-section="closing"]         { background: linear-gradient(135deg, #0a0a1a 0%, #3e2a1a 100%); }
+  .slide[data-section="tech"]            { background: linear-gradient(135deg, #0a0a1a 0%, #1a2a3e 100%); }
+  .slide[data-section="theory"]          { background: linear-gradient(135deg, #0a0a1a 0%, #2a1a3e 100%); }
+  .slide[data-section="arch"]            { background: linear-gradient(135deg, #0a0a1a 0%, #1e3a2f 100%); }
+
+  /* Custom-section override hook: any slide can set its own gradient via inline style */
+
+  .slide-number {
+    position: fixed;
+    bottom: 2vh;
+    right: 3vw;
+    font-size: 1.2rem;
+    color: rgba(255,255,255,0.2);
+    font-weight: 300;
+    z-index: 100;
+    letter-spacing: 0.1em;
+  }
+  body.capturing .slide-number { display: none; }
+
+  /* ========== TYPOGRAPHY ========== */
+  h1 {
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.02em;
+  }
+  h2 {
+    font-size: clamp(1.8rem, 3.5vw, 3rem);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.02em;
+  }
+  .subtitle {
+    font-size: clamp(1.1rem, 2vw, 1.6rem);
+    font-weight: 300;
+    color: var(--fg-muted);
+    max-width: 700px;
+    line-height: 1.6;
+  }
+  .author {
+    font-size: 0.95rem;
+    color: rgba(255,255,255,0.3);
+    margin-top: 3rem;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+  }
+
+  .highlight-green  { color: var(--green); }
+  .highlight-purple { color: var(--purple); }
+  .highlight-blue   { color: var(--blue); }
+  .highlight-orange { color: var(--orange); }
+  .highlight-red    { color: var(--red); }
+
+  /* ========== BADGE ========== */
+  .concept-badge {
+    display: inline-block;
+    padding: 0.4em 1.2em;
+    border-radius: 100px;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+  .badge-green  { background: rgba(72, 199, 142, 0.15); color: var(--green);  border: 1px solid rgba(72, 199, 142, 0.3); }
+  .badge-purple { background: rgba(168, 120, 255, 0.15); color: var(--purple); border: 1px solid rgba(168, 120, 255, 0.3); }
+  .badge-blue   { background: rgba(100, 160, 255, 0.15); color: var(--blue);   border: 1px solid rgba(100, 160, 255, 0.3); }
+  .badge-orange { background: rgba(255, 159, 67, 0.15);  color: var(--orange); border: 1px solid rgba(255, 159, 67, 0.3); }
+  .badge-red    { background: rgba(255, 107, 107, 0.15); color: var(--red);    border: 1px solid rgba(255, 107, 107, 0.3); }
+
+  /* ========== EXAMPLE BOX ========== */
+  .example-box {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 1.8rem 2.2rem;
+    max-width: 850px;
+    width: 100%;
+    text-align: left;
+    margin-top: 1.5rem;
+    font-size: clamp(0.95rem, 1.3vw, 1.1rem);
+    line-height: 1.7;
+    color: rgba(240,240,245,0.85);
+  }
+  .example-box .label {
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.5rem;
+  }
+  .label-you      { color: rgba(255,255,255,0.4); }
+  .label-ai-green  { color: var(--green); }
+  .label-ai-purple { color: var(--purple); }
+  .label-ai-blue   { color: var(--blue); }
+  .example-box em { font-style: italic; color: rgba(255,255,255,0.55); }
+  .example-box .ai-output {
+    background: rgba(255,255,255,0.04);
+    border-left: 3px solid;
+    padding: 1rem 1.2rem;
+    border-radius: 0 8px 8px 0;
+    margin-top: 0.8rem;
+    font-size: 0.95em;
+  }
+  .example-box .ai-output.border-green  { border-left-color: var(--green); }
+  .example-box .ai-output.border-purple { border-left-color: var(--purple); }
+  .example-box .ai-output.border-blue   { border-left-color: var(--blue); }
+  .example-box .ai-output.border-orange { border-left-color: var(--orange); }
+
+  /* ========== COMPARE (2-box L/R or stacked) ========== */
+  .compare-container {
+    display: flex;
+    gap: 1.5rem;
+    max-width: 950px;
+    width: 100%;
+    margin-top: 1.5rem;
+  }
+  .compare-container.column { flex-direction: column; gap: 1rem; max-width: 850px; }
+
+  .compare-box {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 1.5rem 1.8rem;
+    text-align: left;
+    font-size: clamp(0.85rem, 1.2vw, 1rem);
+    line-height: 1.6;
+  }
+  .compare-box .compare-label {
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.8rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .compare-bad  .compare-label { color: var(--red); }
+  .compare-good .compare-label { color: var(--green); }
+  .compare-bad  { border-color: rgba(255,107,107,0.2); }
+  .compare-good { border-color: rgba(72,199,142,0.2); }
+  /* Neutral pair — for value-free comparisons (modes, options, paths) */
+  .compare-left  .compare-label { color: var(--blue); }
+  .compare-right .compare-label { color: var(--orange); }
+  .compare-left  { border-color: rgba(100,160,255,0.2); }
+  .compare-right { border-color: rgba(255,159,67,0.2); }
+
+  /* ========== ITERATIONS (numbered steps) ========== */
+  .iteration-step {
+    padding: 0.6rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .iteration-step:last-child { border-bottom: none; }
+  .iter-num {
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.3rem;
+  }
+  .iter-finding {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 0.2rem;
+  }
+  .iter-result {
+    font-size: 0.95rem;
+    color: rgba(255,255,255,0.85);
+  }
+
+  /* ========== ENUMERATION (n-cell grid) ========== */
+  .components-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    max-width: 850px;
+    width: 100%;
+    margin-top: 1.5rem;
+    text-align: left;
+  }
+  .components-grid.cols-1 { grid-template-columns: 1fr; }
+  .components-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+  .component-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 1.2rem 1.5rem;
+  }
+  .component-item .num {
+    font-weight: 700;
+    font-size: 1.4rem;
+    margin-right: 0.5rem;
+  }
+  .component-item .name {
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+  .component-item .desc {
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.5);
+    margin-top: 0.3rem;
+  }
+  .component-example {
+    font-size: 0.78rem;
+    color: var(--blue);
+    margin-top: 0.35rem;
+    font-style: italic;
+    opacity: 0;
+    overflow: hidden;
+    max-height: 0;
+  }
+  /* Enumerations WITHOUT a reveal mode have no event that would ever expand
+     their examples — render those visible from the start. */
+  .component-example.static {
+    opacity: 1;
+    max-height: 3em;
+  }
+  .component-example.color-green  { color: var(--green); }
+  .component-example.color-purple { color: var(--purple); }
+  .component-example.color-orange { color: var(--orange); }
+
+  /* ========== RECAP ========== */
+  .recap-list {
+    margin-top: 2rem;
+    text-align: left;
+    max-width: 700px;
+  }
+  .recap-item {
+    font-size: clamp(1.1rem, 1.8vw, 1.5rem);
+    margin: 0.8rem 0;
+    font-weight: 400;
+  }
+  .recap-item strong { font-weight: 700; }
+  .arrow {
+    display: inline-block;
+    font-size: 2rem;
+    margin: 1rem 0;
+    color: rgba(255,255,255,0.3);
+  }
+
+  /* ========== CODE ========== */
+  .code-block {
+    background: #1a1a2e;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 1.2rem 1.5rem;
+    margin-top: 1.5rem;
+    max-width: 950px;
+    width: 100%;
+    text-align: left;
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    font-size: clamp(0.85rem, 1.1vw, 1rem);
+    line-height: 1.6;
+    overflow-x: auto;
+  }
+  .code-block pre { margin: 0; }
+  .code-block code { background: transparent; padding: 0; }
+
+  /* ========== MATH ========== */
+  .math-display {
+    margin: 1.5rem 0;
+    font-size: clamp(1.2rem, 2vw, 1.8rem);
+  }
+  .math-explanation {
+    font-size: clamp(0.95rem, 1.3vw, 1.1rem);
+    color: var(--fg-muted);
+    max-width: 700px;
+    margin-top: 1rem;
+  }
+
+  /* ========== DIAGRAM ========== */
+  .diagram-container {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-top: 1.5rem;
+    max-width: 1100px;
+    width: 100%;
+    overflow: auto;
+  }
+  .diagram-container svg { max-width: 100%; height: auto; }
+  .diagram-container .mermaid { background: transparent; }
+
+  /* ========== TABLE ========== */
+  .data-table {
+    border-collapse: collapse;
+    margin-top: 1.5rem;
+    max-width: 950px;
+    width: 100%;
+    background: rgba(255,255,255,0.03);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .data-table th, .data-table td {
+    padding: 0.8rem 1.2rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    font-size: clamp(0.9rem, 1.2vw, 1.05rem);
+  }
+  .data-table th {
+    background: rgba(255,255,255,0.06);
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+
+  /* ========== COPY BUTTON ========== */
+  .copy-btn {
+    display: inline-block;
+    margin-top: 0.6rem;
+    padding: 0.3em 0.8em;
+    font-size: 0.75rem;
+    font-family: inherit;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: rgba(255,255,255,0.35);
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .copy-btn:hover {
+    color: rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.2);
+  }
+  .copy-btn.copied {
+    color: var(--green);
+    border-color: rgba(72,199,142,0.3);
+  }
+  body.capturing .copy-btn { opacity: 0.5; pointer-events: none; }
+  .copy-hint {
+    display: inline-block;
+    margin-left: 0.7em;
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.4);
+    font-style: italic;
+  }
+  .copy-hint code {
+    background: rgba(255,255,255,0.06);
+    padding: 0.05em 0.35em;
+    border-radius: 3px;
+    font-style: normal;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.95em;
+  }
+  body.capturing .copy-hint { display: none; }
+
+  /* ========== INFO BUTTON + OVERLAY ========== */
+  .info-btn {
+    position: absolute;
+    bottom: 3vh;
+    left: 3vw;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 0.7em;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.22);
+    color: rgba(255,255,255,0.5);
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3em;
+    transition: all 0.3s;
+    z-index: 50;
+  }
+  .info-btn:hover {
+    background: rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.85);
+    border-color: rgba(255,255,255,0.4);
+    transform: scale(1.05);
+  }
+  body.capturing .info-btn { display: none; }
+
+  .info-overlay {
+    position: fixed;
+    top: 0;
+    right: -45vw;
+    width: 42vw;
+    height: 100vh;
+    background: rgba(10,10,30,0.97);
+    border-left: 1px solid rgba(255,255,255,0.1);
+    z-index: 300;
+    padding: 5vh 3vw;
+    overflow-y: auto;
+    transition: right 0.4s ease;
+  }
+  .info-overlay.open { right: 0; }
+  .info-overlay .info-close {
+    position: absolute;
+    top: 2vh;
+    right: 2vw;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.4);
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+  .info-overlay .info-close:hover { color: rgba(255,255,255,0.8); }
+  .info-overlay h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: rgba(255,255,255,0.9);
+  }
+  .info-overlay p, .info-overlay li {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.65);
+    margin-bottom: 0.8rem;
+  }
+  .info-overlay strong { color: rgba(255,255,255,0.85); }
+  .info-overlay ul { padding-left: 1.2rem; margin-bottom: 1rem; }
+
+  /* ========== PLAY BUTTON ========== */
+  .play-btn {
+    position: fixed;
+    bottom: 3vh;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.8rem 2rem;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: var(--fg);
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 100px;
+    cursor: pointer;
+    z-index: 200;
+    transition: background 0.2s;
+  }
+  .play-btn:hover { background: rgba(255,255,255,0.2); }
+  body.capturing .play-btn { display: none; }
+
+  /* ========== FULLSCREEN BUTTON ========== */
+  .fs-btn {
+    position: fixed;
+    top: 2vh;
+    right: 3vw;
+    z-index: 200;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.5);
+    padding: 0.5em 1em;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .fs-btn:hover {
+    background: rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.8);
+  }
+  body.capturing .fs-btn { display: none; }
+  :fullscreen body, body:fullscreen { cursor: none; }
+
+  /* ========== NAV HINT ========== */
+  .nav-hint {
+    position: fixed;
+    bottom: 2vh;
+    right: 3vw;
+    z-index: 150;
+    color: rgba(255,255,255,0.35);
+    font-size: 0.78rem;
+    font-family: inherit;
+    letter-spacing: 0.04em;
+    pointer-events: none;
+    user-select: none;
+  }
+  body.capturing .nav-hint { display: none; }
+
+  /* ========== CAPTIONS ========== */
+  .cc-btn {
+    position: fixed;
+    top: 2vh;
+    right: calc(3vw + 110px);
+    z-index: 200;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.5);
+    padding: 0.5em 1em;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .cc-btn:hover { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.8); }
+  .cc-btn.active { background: rgba(255,255,255,0.2); color: rgba(255,255,255,0.95); }
+  body.capturing .cc-btn { display: none; }
+
+  /* ========== VOLUME / MUTE ========== */
+  .vol-btn {
+    position: fixed;
+    top: 2vh;
+    right: calc(3vw + 220px);
+    z-index: 200;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.5);
+    padding: 0.5em 1em;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .vol-btn:hover { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.8); }
+  .vol-btn.muted { background: rgba(255,107,107,0.15); color: rgba(255,107,107,0.8); border-color: rgba(255,107,107,0.3); }
+  body.capturing .vol-btn { display: none; }
+
+  .cc-overlay {
+    position: fixed;
+    bottom: 12vh;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 180;
+    max-width: 80vw;
+    padding: 0.7em 1.4em;
+    background: rgba(0,0,0,0.75);
+    border-radius: 8px;
+    color: #fff;
+    font-size: clamp(1rem, 1.6vw, 1.4rem);
+    font-weight: 500;
+    line-height: 1.4;
+    text-align: center;
+    pointer-events: none;
+    display: none;
+  }
+  .cc-overlay.visible { display: block; }
+  body.capturing .cc-overlay { display: none; }
+
+  /* ========== END-OF-DECK OVERLAY ========== */
+  .end-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 220;
+    background: rgba(10,10,30,0.85);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    backdrop-filter: blur(4px);
+  }
+  .end-overlay.visible { display: flex; }
+  .end-overlay h2 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    color: rgba(255,255,255,0.85);
+    margin: 0;
+  }
+  .end-overlay .end-restart {
+    padding: 0.8rem 2rem;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: var(--fg);
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .end-overlay .end-restart:hover { background: rgba(255,255,255,0.2); }
+  body.capturing .end-overlay { display: none !important; }
+
+  /* ========== SLIDE-MAP ========== */
+  .map-btn {
+    position: fixed;
+    top: 2vh;
+    left: 3vw;
+    z-index: 200;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.5);
+    padding: 0.5em 1em;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .map-btn:hover { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.8); }
+  .map-panel {
+    position: fixed;
+    top: calc(2vh + 48px);
+    left: 3vw;
+    z-index: 220;
+    background: rgba(10,10,30,0.97);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    padding: 0.4em 0;
+    max-height: 70vh;
+    overflow-y: auto;
+    min-width: 280px;
+    max-width: 420px;
+    display: none;
+  }
+  .map-panel.visible { display: block; }
+  .map-entry {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.7);
+    padding: 0.5em 1em;
+    font-family: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    line-height: 1.3;
+  }
+  .map-entry:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,1); }
+  .map-entry.current { background: rgba(255,255,255,0.06); color: rgba(255,255,255,1); }
+  .map-entry .map-num { display: inline-block; min-width: 1.6em; color: rgba(255,255,255,0.4); }
+  .map-entry .map-info { margin-left: 0.4em; color: rgba(255,255,255,0.5); }
+  body.capturing .map-btn, body.capturing .map-panel { display: none !important; }
+</style>
+</head>
+<body>
+
+{{SLIDES_HTML}}
+
+{{INFO_PANELS_HTML}}
+
+<div class="slide-number" id="slideNum">1</div>
+<audio id="voiceover" src="{{AUDIO_FILE}}" preload="auto"></audio>
+<button class="fs-btn" onclick="toggleFS()" title="Toggle fullscreen (Esc to exit)">Fullscreen</button>
+<button class="fs-btn" id="langBtn" style="right: calc(3vw + 330px); display: none;" onclick="toggleLang()" title="Switch language"></button>
+<button class="cc-btn" id="ccBtn" onclick="toggleCC()" title="Closed captions on/off">CC</button>
+<button class="vol-btn" id="volBtn" onclick="toggleMute()" title="Mute / unmute audio">Sound</button>
+<button class="map-btn" id="mapBtn" onclick="toggleMap()" title="Jump to any slide">&#9776; Slides</button>
+<div class="map-panel" id="mapPanel"></div>
+<button class="play-btn" id="playBtn" onclick="startAutoPlay()" title="Play with narration (use arrow keys to browse without audio)">&#9654; Play</button>
+<div class="cc-overlay" id="ccOverlay"></div>
+<div class="end-overlay" id="endOverlay">
+  <h2>That&rsquo;s it &mdash; now try it.</h2>
+  <button class="end-restart" onclick="restartDeck()">&#10227; Restart</button>
+</div>
+<div class="nav-hint">&#8592; &#8594; step &nbsp; Space play/pause &nbsp; click right = next, left edge = back</div>
+
+<!-- Info overlay (HTML-only feature; hidden during capture) -->
+<div class="info-overlay" id="infoOverlay">
+  <button class="info-close" onclick="closeInfo()">&times;</button>
+  <div id="infoContent"></div>
+</div>
+
+<script>
+// ==================== MERMAID INIT ====================
+if (typeof mermaid !== 'undefined') {
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      primaryColor: '#1a1a3e',
+      primaryTextColor: '#f0f0f5',
+      primaryBorderColor: '#64a0ff',
+      lineColor: '#64a0ff',
+      background: 'transparent'
+    }
+  });
+}
+
+// ==================== HIGHLIGHT.JS INIT ====================
+if (typeof hljs !== 'undefined') {
+  document.querySelectorAll('pre code').forEach((el) => {
+    hljs.highlightElement(el);
+  });
+}
+
+// ==================== SLIDE CONTROL ====================
+const slides         = document.querySelectorAll('.slide');
+const slideNum       = document.getElementById('slideNum');
+const audio          = document.getElementById('voiceover');
+const playBtn        = document.getElementById('playBtn');
+const infoOverlay    = document.getElementById('infoOverlay');
+const infoContent    = document.getElementById('infoContent');
+
+// Injected at build time (default language; `let` so a language switch can rebind):
+let slideTimes     = {{SLIDE_TIMES_JSON}};
+let totalDuration  = {{TOTAL_DURATION}};
+let revealEvents   = {{REVEAL_EVENTS_JSON}};   // [{slide_index, target_selector, at_seconds}, ...]
+let infoData       = {{INFO_DATA_JSON}};        // { topic_key: html_string }
+let subtitleCues   = {{SUBTITLE_CUES_JSON}};    // [{start, text}, ...] sentence-level captions
+const captureMode    = (new URLSearchParams(location.search).get('capture') === '1') ||
+                       (new URLSearchParams(location.search).get('auto') === '1');
+
+// ==================== LANGUAGES (bilingual builds; null in single-language builds) ====================
+// { default, order: [codes], langs: { code: { audio, slideTimes, totalDuration,
+//   revealEvents, infoData, subtitleCues, slides: [innerHTML...], ui } } }
+const LANGS = {{LANGS_JSON}};
+let lang = LANGS ? LANGS.default : null;
+
+function uiStr(key, fallback) {
+  return (LANGS && LANGS.langs[lang] && LANGS.langs[lang].ui && LANGS.langs[lang].ui[key]) || fallback;
+}
+
+function nextLangOf(code) {
+  const i = LANGS.order.indexOf(code);
+  return LANGS.order[(i + 1) % LANGS.order.length];
+}
+
+function setLang(code) {
+  if (!LANGS || code === lang || !LANGS.langs[code]) return;
+  const wasStarted = playbackBase !== null;
+  const wasPlaying = wasStarted && !audio.paused;
+  if (wasPlaying) audio.pause();
+  lang = code;
+  document.documentElement.lang = code;
+  const L = LANGS.langs[code];
+
+  // Swap every slide's content; container divs (section gradients, data
+  // attrs, slide indexing) stay in place.
+  slides.forEach((s, i) => { if (L.slides[i] !== undefined) s.innerHTML = L.slides[i]; });
+
+  slideTimes = L.slideTimes;
+  totalDuration = L.totalDuration;
+  revealEvents = L.revealEvents;
+  infoData = L.infoData;
+  subtitleCues = L.subtitleCues;
+  revealsFiredFor = new Set();
+  closeInfo();
+  buildMap();
+  if (typeof hljs !== 'undefined') {
+    document.querySelectorAll('pre code').forEach((el) => hljs.highlightElement(el));
+  }
+  if (typeof mermaid !== 'undefined' && mermaid.run) {
+    try { mermaid.run(); } catch (e) { /* diagrams are usually language-neutral */ }
+  }
+  const btn = document.getElementById('langBtn');
+  if (btn) btn.textContent = nextLangOf(code).toUpperCase();
+
+  // Mid-video switch: jump the new track to the start of the current slide,
+  // so narration and on-screen text stay in lockstep.
+  audio.src = L.audio;
+  audio.load();
+  if (wasStarted) {
+    const t = slideTimes[Math.max(current, 0)] || 0;
+    playbackBase = (performance.now() / 1000) - t;
+    const apply = () => {
+      audio.currentTime = t;
+      if (wasPlaying) { audio.play().catch(() => {}); requestAnimationFrame(tick); }
+    };
+    if (audio.readyState >= 1) apply();
+    else audio.addEventListener('loadedmetadata', apply, { once: true });
+    if (playBtn) playBtn.innerHTML = wasPlaying ? uiStr('pause', '&#9208; Pause') : uiStr('resume', '&#9654; Resume');
+  } else if (playBtn) {
+    playBtn.innerHTML = uiStr('play', '&#9654; Play');
+  }
+
+  // Re-render the visible slide in the new language.
+  if (current >= 0) {
+    const cur = slides[current];
+    cur.classList.add('active');
+    cur.style.visibility = 'visible';
+    cur.style.opacity = 1;
+    animateSlideIn(cur);
+    if (ccEnabled) renderCaption(getCurrentTime());
+    // If paused/not started, reveal-on-audio won't fire — show everything.
+    if (!wasPlaying) setTimeout(() => revealAllOnSlide(current), 80);
+  }
+}
+
+function toggleLang() { if (LANGS) setLang(nextLangOf(lang)); }
+
+(function initLangBtn() {
+  if (!LANGS || LANGS.order.length < 2) return;
+  const btn = document.getElementById('langBtn');
+  if (!btn) return;
+  btn.style.display = '';
+  btn.textContent = nextLangOf(lang).toUpperCase();
+})();
+
+let current = -1;
+let animating = false;
+// playbackBase: performance.now()/1000 baseline for wall-clock-driven playback.
+// null until first Play; set on Play start; recalibrated on resume to keep
+// audio.currentTime aligned with elapsed wall-time. Used by getCurrentTime()
+// in capture mode (no audio) and as a "first play has happened" sentinel
+// in interactive mode (where audio.currentTime is the source of truth).
+let playbackBase = null;
+let revealsFiredFor = new Set();  // dedupe reveal events
+
+function showSlide(i) {
+  if (i === current || animating) return;
+  animating = true;
+  const prev = current;
+  const incoming = slides[i];
+
+  if (prev >= 0) {
+    gsap.to(slides[prev], { opacity: 0, duration: 0.4, onComplete: () => {
+      slides[prev].classList.remove('active');
+      slides[prev].style.visibility = 'hidden';
+    }});
+  }
+
+  incoming.classList.add('active');
+  incoming.style.visibility = 'visible';
+
+  // Reset any per-item reveals on this slide that fire later (so re-entry works)
+  resetRevealsOnSlide(i);
+
+  gsap.fromTo(incoming, { opacity: 0 }, {
+    opacity: 1, duration: 0.5, ease: "power2.out",
+    onStart: () => animateSlideIn(incoming),
+    onComplete: () => { animating = false; }
+  });
+
+  current = i;
+  slideNum.textContent = (i + 1) + ' / ' + slides.length;
+  if (mapPanel) {
+    mapPanel.querySelectorAll('.map-entry').forEach(e => e.classList.toggle('current', parseInt(e.dataset.idx, 10) === i));
+  }
+}
+
+function animateSlideIn(slide) {
+  // Stagger-fade top-level structural children that DON'T have intra-slide reveal targeting
+  const children = slide.querySelectorAll(
+    ':scope > .concept-badge, ' +
+    ':scope > h1, ' +
+    ':scope > h2, ' +
+    ':scope > .subtitle, ' +
+    ':scope > .author, ' +
+    ':scope > .example-box:not([data-reveal]), ' +
+    ':scope > .compare-container:not([data-reveal-children]), ' +
+    ':scope > .components-grid:not([data-reveal-children]), ' +
+    ':scope > .recap-list, ' +
+    ':scope > .code-block, ' +
+    ':scope > .math-display, ' +
+    ':scope > .math-explanation, ' +
+    ':scope > .diagram-container, ' +
+    ':scope > .data-table, ' +
+    ':scope > p'
+  );
+  gsap.fromTo(children,
+    { opacity: 0, y: 30 },
+    { opacity: 1, y: 0, duration: 0.5, stagger: 0.08, ease: "power2.out", delay: 0.1 }
+  );
+
+  // For containers with per-item reveal scheduled separately, hide their children initially
+  slide.querySelectorAll('[data-reveal-children]').forEach(container => {
+    const items = container.children;
+    for (let it of items) gsap.set(it, { opacity: 0, y: 20 });
+  });
+  // Items individually marked data-reveal start hidden
+  slide.querySelectorAll('[data-reveal]').forEach(el => {
+    gsap.set(el, { opacity: 0, y: 20 });
+  });
+}
+
+function resetRevealsOnSlide(slideIdx) {
+  // Re-arm reveal-fired tracking for events on this slide
+  for (let key of Array.from(revealsFiredFor)) {
+    if (key.startsWith(slideIdx + ':')) revealsFiredFor.delete(key);
+  }
+}
+
+function fireReveal(ev) {
+  const slide = slides[ev.slide_index];
+  if (!slide) return;
+  const targets = slide.querySelectorAll(ev.target_selector);
+  targets.forEach(t => {
+    gsap.to(t, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" });
+    if (t.classList.contains('component-example')) {
+      gsap.to(t, { maxHeight: '3em', duration: 0.5, ease: "power2.out" });
+    }
+  });
+}
+
+function checkReveals(t) {
+  for (let i = 0; i < revealEvents.length; i++) {
+    const ev = revealEvents[i];
+    const key = ev.slide_index + ':' + i;
+    if (revealsFiredFor.has(key)) continue;
+    if (ev.slide_index !== current) continue;
+    if (t >= ev.at_seconds) {
+      revealsFiredFor.add(key);
+      fireReveal(ev);
+    }
+  }
+}
+
+function getCurrentTime() {
+  // Interactive mode: trust audio.currentTime once audio has started, paused or playing
+  if (!captureMode && (audio.currentTime > 0 || !audio.paused)) {
+    return audio.currentTime;
+  }
+  // Capture / headless mode: wall-clock from playbackBase
+  if (playbackBase !== null) {
+    return (performance.now() / 1000) - playbackBase;
+  }
+  return 0;
+}
+
+function tick() {
+  const t = getCurrentTime();
+
+  // Find which slide we should be on
+  let target = 0;
+  for (let i = slideTimes.length - 1; i >= 0; i--) {
+    if (t >= slideTimes[i]) { target = i; break; }
+  }
+  if (target !== current) showSlide(target);
+
+  // Fire any pending reveals for the current slide
+  checkReveals(t);
+
+  if (t < totalDuration + 0.5) {
+    requestAnimationFrame(tick);
+  }
+}
+
+function startAutoPlay() {
+  const playBtn = document.getElementById('playBtn');
+  // First play
+  if (playbackBase === null) {
+    playbackBase = performance.now() / 1000;
+    audio.currentTime = 0;
+    audio.play().catch(() => { /* muted/headless — silent is fine */ });
+    if (captureMode) document.body.classList.add('capturing');
+    showSlide(0);
+    requestAnimationFrame(tick);
+    if (playBtn) playBtn.innerHTML = uiStr('pause', '&#9208; Pause');
+    return;
+  }
+  // Subsequent toggle
+  if (audio.paused) {
+    playbackBase = (performance.now() / 1000) - audio.currentTime;
+    audio.play().catch(() => {});
+    if (playBtn) playBtn.innerHTML = uiStr('pause', '&#9208; Pause');
+    requestAnimationFrame(tick);
+  } else {
+    audio.pause();
+    if (playBtn) playBtn.innerHTML = uiStr('resume', '&#9654; Resume');
+  }
+}
+
+// Interactive: also drive reveals from audio.timeupdate (for scrubbing)
+audio.addEventListener('timeupdate', () => {
+  if (captureMode) return;
+  if (audio.paused) return;
+  // audio playback drives slide + reveal; but tick() loop also handles this
+});
+
+// Keyboard nav: space toggles play/pause anytime; arrows scrub slide+audio
+document.addEventListener('keydown', (e) => {
+  if (e.key === ' ') {
+    e.preventDefault();
+    startAutoPlay();
+    return;
+  }
+  if (e.key === 'Escape' && infoOverlay.classList.contains('open')) {
+    closeInfo(); e.stopPropagation();
+    return;
+  }
+  if (e.key === 'ArrowRight') {
+    e.preventDefault();
+    if (current >= slides.length - 1) { showEndOverlay(); return; }
+    jumpToSlide(current + 1);
+  }
+  if (e.key === 'ArrowLeft') {
+    e.preventDefault();
+    jumpToSlide(Math.max(current - 1, 0));
+  }
+});
+
+// Click-to-advance: left third = back, rest = forward; UI-element guards prevent nav
+document.addEventListener('click', (e) => {
+  if (e.target.closest('.fs-btn, .play-btn, .copy-btn, .info-btn, .info-overlay, button, a')) return;
+  if (e.clientX < window.innerWidth / 3) {
+    jumpToSlide(Math.max(current - 1, 0));
+  } else {
+    if (current >= slides.length - 1) { showEndOverlay(); return; }
+    jumpToSlide(current + 1);
+  }
+});
+
+// ==================== SLIDE-MAP ====================
+const mapPanel = document.getElementById('mapPanel');
+
+function buildMap() {
+  if (!mapPanel) return;
+  mapPanel.innerHTML = '';
+  slides.forEach((slide, idx) => {
+    const badge = slide.querySelector('.concept-badge')?.textContent.trim() || '';
+    const heading = slide.querySelector('h1, h2')?.textContent.trim() || '';
+    const hasInfo = !!slide.querySelector('.info-btn');
+    const labelText = heading || (badge ? badge : 'Slide ' + (idx + 1));
+    const entry = document.createElement('button');
+    entry.className = 'map-entry';
+    entry.dataset.idx = idx;
+    entry.innerHTML =
+      '<span class="map-num">' + (idx + 1) + '.</span> ' +
+      (badge && badge !== labelText ? '<span class="map-info">[' + badge + ']</span> ' : '') +
+      labelText +
+      (hasInfo ? ' <span class="map-info">&#9432;</span>' : '');
+    entry.onclick = () => { jumpToSlide(idx); toggleMap(); };
+    mapPanel.appendChild(entry);
+  });
+}
+
+function toggleMap() {
+  if (mapPanel) mapPanel.classList.toggle('visible');
+}
+
+function revealAllOnSlide(idx) {
+  // Force-show every reveal target on the slide. Used when the user jumps
+  // (slide-map / arrow seek) — the reveal-on-audio-time path would otherwise
+  // leave content hidden until playback catches up to its scheduled timestamp.
+  const slide = slides[idx];
+  if (!slide) return;
+  slide.querySelectorAll('[data-reveal-children]').forEach(container => {
+    for (let it of container.children) {
+      gsap.to(it, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" });
+      if (it.classList.contains('component-example')) {
+        gsap.to(it, { maxHeight: '3em', duration: 0.3, ease: "power2.out" });
+      }
+    }
+  });
+  slide.querySelectorAll('[data-reveal]').forEach(el => {
+    gsap.to(el, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" });
+    if (el.classList.contains('component-example')) {
+      gsap.to(el, { maxHeight: '3em', duration: 0.3, ease: "power2.out" });
+    }
+  });
+  // Mark every reveal event for this slide as fired so checkReveals doesn't re-animate
+  for (let i = 0; i < revealEvents.length; i++) {
+    if (revealEvents[i].slide_index === idx) revealsFiredFor.add(idx + ':' + i);
+  }
+}
+
+function jumpToSlide(idx) {
+  const target = Math.max(0, Math.min(idx, slides.length - 1));
+  if (playbackBase !== null && slideTimes[target] !== undefined) audio.currentTime = slideTimes[target];
+  showSlide(target);
+  // Defer past animateSlideIn (which hides reveal targets at slide-enter)
+  setTimeout(() => revealAllOnSlide(target), 60);
+}
+
+// Close map panel on outside click
+document.addEventListener('click', (e) => {
+  if (!mapPanel || !mapPanel.classList.contains('visible')) return;
+  if (e.target.closest('.map-panel, .map-btn')) return;
+  mapPanel.classList.remove('visible');
+});
+
+// ==================== VOLUME / MUTE ====================
+function toggleMute() {
+  audio.muted = !audio.muted;
+  const btn = document.getElementById('volBtn');
+  if (btn) {
+    btn.textContent = audio.muted ? 'Muted' : 'Sound';
+    btn.classList.toggle('muted', audio.muted);
+  }
+}
+
+// ==================== END-OF-DECK ====================
+const endOverlay = document.getElementById('endOverlay');
+
+function showEndOverlay() {
+  if (endOverlay && !captureMode) endOverlay.classList.add('visible');
+}
+
+function restartDeck() {
+  audio.pause();
+  audio.currentTime = 0;
+  playbackBase = null;
+  if (endOverlay) endOverlay.classList.remove('visible');
+  if (playBtn) playBtn.innerHTML = uiStr('play', '&#9654; Play');
+  showSlide(0);
+}
+
+audio.addEventListener('ended', () => {
+  if (!captureMode) showEndOverlay();
+});
+
+// ==================== FULLSCREEN ====================
+function toggleFS() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  } else {
+    document.exitFullscreen();
+  }
+}
+document.addEventListener('fullscreenchange', () => {
+  const btn = document.querySelector('.fs-btn');
+  if (btn) btn.textContent = document.fullscreenElement ? 'Exit fullscreen' : 'Fullscreen';
+});
+
+// ==================== CAPTIONS ====================
+let ccEnabled = false;
+const ccOverlay = document.getElementById('ccOverlay');
+const ccBtn = document.getElementById('ccBtn');
+
+function toggleCC() {
+  ccEnabled = !ccEnabled;
+  if (ccBtn) ccBtn.classList.toggle('active', ccEnabled);
+  if (ccOverlay) ccOverlay.classList.toggle('visible', ccEnabled);
+  if (!ccEnabled && ccOverlay) ccOverlay.textContent = '';
+  if (ccEnabled) renderCaption(getCurrentTime());
+}
+
+function renderCaption(t) {
+  if (!ccEnabled || !ccOverlay || !subtitleCues || subtitleCues.length === 0) return;
+  let active = '';
+  for (let i = subtitleCues.length - 1; i >= 0; i--) {
+    if (t >= subtitleCues[i].start) { active = subtitleCues[i].text; break; }
+  }
+  if (ccOverlay.textContent !== active) ccOverlay.textContent = active;
+}
+
+audio.addEventListener('timeupdate', () => {
+  if (ccEnabled && !audio.paused) renderCaption(audio.currentTime);
+});
+
+// ==================== COPY-TO-CLIPBOARD ====================
+function copyText(text, btn, event) {
+  if (event) event.stopPropagation();
+  const original = btn.textContent;
+  const setCopied = () => {
+    btn.textContent = uiStr('copied', 'Copied!');
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = original;
+      btn.classList.remove('copied');
+    }, 2000);
+  };
+  const fallback = () => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.top = '0';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); setCopied(); }
+    catch (e) { console.warn('copy failed:', e); }
+    document.body.removeChild(ta);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(setCopied).catch(fallback);
+  } else {
+    fallback();
+  }
+}
+
+// ==================== INFO OVERLAY ====================
+function openInfo(topic, event) {
+  if (event) event.stopPropagation();
+  infoContent.innerHTML = infoData[topic] || '<p>No info defined for this topic.</p>';
+  infoOverlay.classList.add('open');
+}
+function closeInfo() {
+  infoOverlay.classList.remove('open');
+}
+
+// ==================== INITIAL PAINT ====================
+buildMap();
+showSlide(0);
+
+// Headless capture auto-start: ?capture=1 OR ?auto=1
+if (captureMode) {
+  // v2.5 sync marker: solid magenta covers the canvas from script-parse until
+  // the page is actually ready (load + fonts + settle). The build locates the
+  // last magenta frame in the recording and trims the video there, so video
+  // t=0 aligns with audio t=0 regardless of page-load/CDN latency. (Found on
+  // a slow-CDN render: ~6s of white/black head while narration was running.)
+  const marker = document.createElement('div');
+  marker.id = 'syncMarker';
+  marker.setAttribute('style',
+    'position:fixed;top:0;left:0;right:0;bottom:0;background:#ff00ff;z-index:2147483647');
+  document.body.appendChild(marker);
+  window.addEventListener('load', () => {
+    const fontsReady = (document.fonts && document.fonts.ready)
+      ? document.fonts.ready : Promise.resolve();
+    fontsReady.then(() => setTimeout(() => {
+      marker.remove();
+      window.__captureStarted = true;
+      startAutoPlay();
+    }, 300));
+  });
+}
+</script>
+
+</body>
+</html>

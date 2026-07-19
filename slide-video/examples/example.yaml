@@ -1,0 +1,55 @@
+title: "Three Ideas About Attention"
+voice: "en-US-AriaNeural"
+
+slides:
+  - section: intro
+    html: |
+      <div class="concept-badge badge-green">PREMISE</div>
+      <h1>Three Ideas About <span class="highlight-green">Attention</span></h1>
+      <p class="subtitle">Small shifts that change how you work.</p>
+    narration: |
+      Let me tell you about three ideas that changed how I think about attention.
+      They are small shifts, but each one pays for itself the first time you use it.
+
+  - section: meta
+    html: |
+      <div class="concept-badge badge-purple">ONE</div>
+      <h2>Attention is a <span class="highlight-purple">resource</span>.</h2>
+      <p class="subtitle">Not a mindset. Not a choice. A finite thing that gets spent.</p>
+    narration: |
+      First. Attention is not a mindset or a choice.
+      It is a resource, and every context switch spends some of it.
+      When you treat it as infinite, your day dissolves into fragments.
+
+  - section: iterations
+    html: |
+      <div class="concept-badge badge-blue">TWO</div>
+      <h2>Protect the <span class="highlight-blue">first hour</span>.</h2>
+      <div class="example-box">
+        <div class="label label-you">THE RULE</div>
+        No meetings, no chat, no email for the first sixty minutes of your day.
+      </div>
+    narration: |
+      Second. Protect the first hour of the day.
+      No meetings, no messages, no inbox. Just the one hard thing you have been putting off.
+      One hour, done before the world wakes up, beats a whole afternoon of reactive work.
+
+  - section: structure
+    html: |
+      <div class="concept-badge badge-orange">THREE</div>
+      <h2>Name the <span class="highlight-orange">next action</span>.</h2>
+      <p class="subtitle">Every open loop closes on a verb.</p>
+    narration: |
+      Third. When you stop working on something, write down the next concrete action.
+      Not the goal. Not the topic. The next verb, short enough to fit on one line.
+      That single sentence is what lets you start again without reloading the whole problem.
+
+  - section: closing
+    html: |
+      <div class="concept-badge badge-green">DO THIS</div>
+      <h1>Start <span class="highlight-green">tomorrow</span>.</h1>
+      <p class="subtitle">Pick one. Try it for a week.</p>
+    narration: |
+      So, three ideas: attention is a resource, protect the first hour, name the next action.
+      You do not need all three. Pick one and try it for a week.
+      If it does not land, drop it and try another. The only wrong move is to read this and do nothing.

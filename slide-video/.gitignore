@@ -1,0 +1,19 @@
+# Intermediate build artifacts (set --work-dir to emit these locally)
+*.mp3
+*.mp4
+*.webm
+boundaries.json
+presentation.html
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,93 @@
+# Bilingual (EN/DE) example — exercises the v2.4 `languages:` block.
+#
+# Any text field can be a {en: ..., de: ...} map; plain strings are shared
+# across languages (use for code, formulas, names). One TTS pass runs per
+# language; the HTML gets a language toggle that switches on-screen text and
+# narration audio together (mid-video: the new track jumps to the start of
+# the current slide). The MP4 carries the FIRST language's narration.
+#
+# Voice note: en-US-AndrewMultilingualNeural speaks both languages — same
+# speaker identity across tracks. If the operator's ear finds its German
+# accent poor, switch the de entry to german-multilingual-male
+# (de-DE-FlorianMultilingualNeural) or german-male (de-DE-ConradNeural).
+title:
+  en: "Two Tips for Better Prompts"
+  de: "Zwei Tipps für bessere Prompts"
+
+languages:
+  - code: en
+    voice: multilingual-male
+  - code: de
+    voice: multilingual-male
+    ui:
+      play: "&#9654; Mit Ton abspielen"
+      pause: "&#9208; Pause"
+      resume: "&#9654; Weiter"
+      copied: "Kopiert!"
+
+slides:
+  - layout: title
+    badge: { text: { en: "QUICK TIPS", de: "KURZ-TIPPS" }, color: green }
+    title:
+      en: "Two Tips for <span class='highlight-green'>Better Prompts</span>"
+      de: "Zwei Tipps für <span class='highlight-green'>bessere Prompts</span>"
+    subtitle:
+      en: "Two minutes. Immediately usable."
+      de: "Zwei Minuten. Sofort einsetzbar."
+    narration:
+      en: "Two quick tips for better prompts. Both take seconds to use."
+      de: "Zwei schnelle Tipps für bessere Prompts. Beide sind in Sekunden angewendet."
+
+  - layout: example
+    badge: { text: { en: "TIP ONE", de: "TIPP EINS" }, color: blue }
+    heading:
+      en: "Give the AI a <span class='highlight-blue'>role</span>"
+      de: "Geben Sie der KI eine <span class='highlight-blue'>Rolle</span>"
+    body:
+      label: { en: "What you say", de: "Das sagen Sie" }
+      text:
+        en: "You are a senior reviewer in [your field]. List the three weakest points of the draft below, ranked by impact."
+        de: "Du bist ein erfahrener Gutachter im Bereich [Ihr Fachgebiet]. Nenne die drei schwächsten Punkte des folgenden Entwurfs, sortiert nach Auswirkung."
+      copy:
+        en: "You are a senior reviewer in [your field]. List the three weakest points of the draft below, ranked by impact."
+        de: "Du bist ein erfahrener Gutachter im Bereich [Ihr Fachgebiet]. Nenne die drei schwächsten Punkte des folgenden Entwurfs, sortiert nach Auswirkung."
+    narration:
+      en: "Tip one. Give the AI a role. A senior reviewer in your field brings sharper feedback than a generic assistant."
+      de: "Tipp eins. Geben Sie der KI eine Rolle. Ein erfahrener Gutachter in Ihrem Fachgebiet liefert schärferes Feedback als ein generischer Assistent."
+
+  - layout: enumeration
+    badge: { text: { en: "TIP TWO", de: "TIPP ZWEI" }, color: orange }
+    heading:
+      en: "Constrain the output"
+      de: "Begrenzen Sie die Ausgabe"
+    color: orange
+    items:
+      - num: 1
+        name: { en: "Format", de: "Format" }
+        desc: { en: "Name the exact shape.", de: "Benennen Sie die exakte Form." }
+        example: { en: "A table with three columns.", de: "Eine Tabelle mit drei Spalten." }
+      - num: 2
+        name: { en: "Length", de: "Länge" }
+        desc: { en: "Set a hard cap.", de: "Setzen Sie eine harte Obergrenze." }
+        example: { en: "No more than 150 words.", de: "Höchstens 150 Wörter." }
+    narration:
+      en: "Tip two. Constrain the output. Name the format and set a hard length cap. The AI guesses less and delivers more."
+      de: "Tipp zwei. Begrenzen Sie die Ausgabe. Benennen Sie das Format und setzen Sie eine harte Längenobergrenze. Die KI rät weniger und liefert mehr."
+
+  - layout: recap
+    heading:
+      en: "That's it"
+      de: "Das war's"
+    items:
+      - strong: { en: "Role", de: "Rolle" }
+        text: { en: "Sharper expertise.", de: "Schärferes Fachwissen." }
+        color: blue
+      - strong: { en: "Constraints", de: "Begrenzungen" }
+        text: { en: "Less guessing.", de: "Weniger Raten." }
+        color: orange
+    closing:
+      en: "Try one of them on your next prompt."
+      de: "Probieren Sie einen davon bei Ihrem nächsten Prompt."
+    narration:
+      en: "That's it. A role for sharper expertise. Constraints for less guessing. Try one on your next prompt today."
+      de: "Das war's. Eine Rolle für schärferes Fachwissen. Begrenzungen für weniger Raten. Probieren Sie es heute bei Ihrem nächsten Prompt."

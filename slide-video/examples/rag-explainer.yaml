@@ -1,0 +1,150 @@
+title: "RAG in Five Minutes"
+voice: conversational
+
+# Canonical scaffold: intro hook -> 3 concepts (each title + demo + result) -> recap -> CTA.
+# Topic: RAG (Retrieval-Augmented Generation). Non-prompting; validates that the
+# skill is general enough for technical content (uses code, diagram, math primitives).
+
+slides:
+
+  # ===== Intro (2 slides) =====
+
+  - layout: title
+    section: intro
+    badge: { text: "TECHNICAL EXPLAINER", color: blue }
+    title: "RAG in <span class='highlight-blue'>Five Minutes</span>"
+    subtitle: "Retrieval-Augmented Generation, end to end."
+    narration: "Let me explain RAG in five minutes. By the end you will know what it is, how it works, and when to reach for it."
+
+  - layout: hook
+    section: intro
+    heading: "Why does the AI keep saying things that <span class='highlight-orange'>aren't true</span>?"
+    subtitle: "The model knows what it was trained on. Nothing else."
+    narration: "The model knows what it was trained on, and nothing else. RAG is how you give it access to information it never saw."
+
+  # ===== Concept 1: What RAG is (3 slides) =====
+
+  - layout: title
+    section: arch
+    badge: { text: "Concept 1", color: green }
+    title: "What RAG <span class='highlight-green'>actually is</span>"
+    subtitle: "Two systems, one prompt."
+    narration: "First. What is RAG, structurally?"
+
+  - layout: diagram
+    section: arch
+    badge: { text: "Architecture", color: green }
+    heading: "Two systems chained:"
+    mermaid: |
+      flowchart LR
+        Q[User Question] --> E[Embedder]
+        E --> S[(Vector Store)]
+        S --> R[Retriever]
+        D[(Document<br/>Store)] -.indexed by.-> S
+        R --> C[Context]
+        Q --> P[Prompt Builder]
+        C --> P
+        P --> L[LLM]
+        L --> A[Grounded Answer]
+    narration: "A retriever finds relevant text in a database. The LLM then answers using that text as context. Two systems, one prompt."
+
+  - layout: code
+    section: arch
+    badge: { text: "Concept 1", color: green }
+    heading: "The prompt that comes out:"
+    language: python
+    code: |
+      prompt = f"""
+      Answer the question using only this context.
+      If the context does not contain the answer, say "I don't know."
+
+      Context:
+      {retrieved_chunks}
+
+      Question: {user_question}
+      """
+    copy: true
+    narration: "The retrieved text is pasted into a prompt template, and the LLM is told to ground its answer in that text only. That single instruction is what cuts hallucinations."
+
+  # ===== Concept 2: How retrieval works (3 slides) =====
+
+  - layout: title
+    section: theory
+    badge: { text: "Concept 2", color: purple }
+    title: "How <span class='highlight-purple'>retrieval</span> works"
+    subtitle: "Vectors and similarity, not keywords."
+    narration: "Second. How does retrieval actually find the right chunks?"
+
+  - layout: math
+    section: theory
+    badge: { text: "Cosine similarity", color: purple }
+    heading: "Two vectors, one number:"
+    formula: "\\text{sim}(A, B) = \\frac{A \\cdot B}{\\|A\\| \\, \\|B\\|}"
+    explanation: "Two embeddings pointing the same direction score one. Orthogonal scores zero. The retriever returns the top-k highest scorers."
+    narration: "Each chunk and the query are turned into vectors by an embedding model. Cosine similarity scores how aligned two vectors are. The retriever returns the top scorers."
+
+  - layout: code
+    section: theory
+    badge: { text: "Concept 2", color: purple }
+    heading: "What the retrieval call looks like:"
+    language: python
+    code: |
+      query_vec = embedder.encode(user_question)
+      results  = vector_store.search(query_vec, top_k=5)
+      chunks   = [r.text for r in results]
+    copy: true
+    narration: "The query becomes a vector. The store returns the closest five chunks. Those chunks become the context. That is the entire retrieval step."
+
+  # ===== Concept 3: When to use it (3 slides) =====
+
+  - layout: title
+    section: closing
+    badge: { text: "Concept 3", color: orange }
+    title: "When to <span class='highlight-orange'>reach for it</span>"
+    subtitle: "And when not to."
+    narration: "Third. When does RAG actually help, and when is it overkill?"
+
+  - layout: compare
+    section: closing
+    badge: { text: "Concept 3", color: orange }
+    heading: "Use it when:"
+    bad:
+      label: "RAG is wrong for"
+      body: "General reasoning. Math. Code generation. Anything the model already knows. Adding retrieval just adds latency."
+    good:
+      label: "RAG is right for"
+      body: "Domain-specific facts. Recent events. Internal documents. Anything the model couldn't have seen during training."
+    narration: "RAG is wrong when the task is general reasoning. The model already knows that. RAG is right when the task needs facts the model could not have seen during training. Internal documents, recent events, domain knowledge."
+
+  - layout: enumeration
+    section: closing
+    badge: { text: "Trade-offs", color: orange }
+    intro: "What you trade for grounding:"
+    columns: 2
+    color: orange
+    items:
+      - { num: 1, name: "Latency",     desc: "+200-500ms per query (embed + search)" }
+      - { num: 2, name: "Cost",        desc: "Vector store + embedder calls" }
+      - { num: 3, name: "Complexity",  desc: "More moving parts to debug" }
+      - { num: 4, name: "Chunking",    desc: "How you split docs decides quality" }
+    narration: "RAG is not free. Latency goes up. There is a vector store to maintain. The way you chunk your documents directly decides retrieval quality. So use RAG when grounding matters, not by default."
+
+  # ===== Recap + CTA (2 slides) =====
+
+  - layout: recap
+    section: closing
+    heading: "RAG in three lines:"
+    items:
+      - { strong: "What", color: green,  body: "Retriever finds relevant text. LLM answers with that text as context." }
+      - { strong: "How",  color: purple, body: "Vector embeddings + cosine similarity + top-k." }
+      - { strong: "When", color: orange, body: "Domain facts and current information. Not for general reasoning." }
+    arrows: true
+    closing: "Start with a small dataset and a hosted vector store. Tune chunking, then prompt, then embedder."
+    narration: "So, three lines. RAG is retrieval plus generation. It works by vector similarity. And it earns its complexity when the model needs facts it never saw. Now you know the shape. Pick a small dataset to try it."
+
+  - layout: title
+    section: closing
+    badge: { text: "TRY THIS", color: green }
+    title: "Your <span class='highlight-green'>first RAG</span>:"
+    subtitle: "Pick 100 documents you care about. Embed them. Ask one real question. See if the answer changes."
+    narration: "Pick a hundred documents you care about. Embed them with a hosted model. Ask one real question. Compare the grounded answer to the ungrounded one. That is the whole loop, in fifteen minutes."

@@ -1,0 +1,87 @@
+title: "When the AI Lies to You: A Field Guide"
+voice: friendly
+
+# Scaffold deviation example: deliberately departs from the canonical
+# "intro hook -> 3 concepts × triplet -> recap -> CTA" structure.
+# Instead: problem-first -> diagnosis -> three failure modes (each ONE slide,
+# not a triplet) -> intervention -> caveat. 8 slides total. No info-panel.
+# Validates that scaffolds are recipes, not frames.
+
+slides:
+
+  - layout: hook
+    section: intro
+    heading: "Why is the AI <span class='highlight-orange'>so confidently wrong</span>?"
+    subtitle: "Three failure modes. One mental model. Practical interventions."
+    narration: "Why is the AI so confidently wrong sometimes? There are really only three things going on. Once you can spot which one is firing, you know what to do about it."
+
+  - layout: title
+    section: theory
+    badge: { text: "MENTAL MODEL", color: blue }
+    title: "The model is a <span class='highlight-blue'>guesser</span>, not a knower."
+    subtitle: "It produces the most plausible next token. Not the true one."
+    narration: "Here is the one frame that explains all three failure modes. The model is a guesser. It produces the most plausible next token, given everything before. Plausible is not the same as true."
+
+  - layout: example
+    section: theory
+    badge: { text: "Failure mode 1", color: red }
+    heading: "<span class='highlight-red'>Confabulation</span>"
+    body:
+      label: "WHEN IT HAPPENS"
+      label_color: you
+      output:
+        accent: orange
+        body: "<strong>Question outside training data, no admission of ignorance.</strong> The model fills the gap with the most plausible-looking content, syntactically perfect and semantically wrong."
+    narration: "The first failure is confabulation. You ask about something the model never saw. It does not know it does not know. So it produces something plausible, perfectly worded, and entirely fabricated."
+
+  - layout: example
+    section: theory
+    badge: { text: "Failure mode 2", color: red }
+    heading: "<span class='highlight-red'>Anchored continuation</span>"
+    body:
+      label: "WHEN IT HAPPENS"
+      label_color: you
+      output:
+        accent: orange
+        body: "<strong>You included a wrong premise in the prompt.</strong> The model takes it as given and reasons consistently from a false start. The output is internally consistent and externally wrong."
+    narration: "Second. Anchored continuation. You included a wrong fact in the prompt. The model takes it as given and reasons consistently. The whole answer is internally consistent and externally wrong."
+
+  - layout: example
+    section: theory
+    badge: { text: "Failure mode 3", color: red }
+    heading: "<span class='highlight-red'>Sycophantic agreement</span>"
+    body:
+      label: "WHEN IT HAPPENS"
+      label_color: you
+      output:
+        accent: orange
+        body: "<strong>You pushed back, even softly.</strong> The model is trained to be helpful. It updates toward your apparent preference, even when its first answer was correct."
+    narration: "Third. Sycophantic agreement. You disagreed, even softly. The model is trained to be helpful. It updates toward your apparent preference, sometimes abandoning a correct first answer."
+
+  - layout: compare
+    section: closing
+    badge: { text: "INTERVENTION", color: green }
+    heading: "What to do, in one move:"
+    direction: column
+    bad:
+      label: "Default prompt (no protection)"
+      body: "&quot;Tell me about X.&quot; — model fills the gap regardless of whether it knows."
+    good:
+      label: "With protection (one sentence added)"
+      body: "&quot;Tell me about X. <strong>If you do not know, say so explicitly. Do not guess.</strong>&quot; — model is now allowed to admit ignorance."
+      copy: 'Tell me about X. If you do not know, say so explicitly. Do not guess.'
+    narration: "There is one intervention that handles all three. Add one sentence to your prompt. Tell the model it is allowed to say it does not know. That single permission cuts confabulation, breaks anchoring, and gives the model a path other than agreement."
+
+  - layout: hook
+    section: closing
+    heading: "But — this is <span class='highlight-orange'>not a panacea</span>."
+    subtitle: "Verify anything load-bearing against a source the model couldn't have seen."
+    narration: "But this is not a panacea. The intervention helps. It does not eliminate. For anything that actually matters, verify against a source the model could not have seen. Numbers, recent events, internal documents. Permission to admit ignorance, plus external verification. Together. That is the loop."
+
+  - layout: title
+    section: closing
+    badge: { text: "TRY IT", color: green }
+    title: "Add the <span class='highlight-green'>permission line</span> to your next prompt."
+    subtitle: "See what changes."
+    author: "Field guide, edition one."
+    narration: "So, add the permission line to your next prompt. Compare the answer. See what changes. That is the whole exercise."

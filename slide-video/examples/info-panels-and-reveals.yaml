@@ -1,0 +1,94 @@
+title: "How an AI Refines Itself: Iterations as a Discipline"
+voice: conversational
+
+# Validation example for v2-specific features:
+#   - info_panel    (per-slide deep-dive side drawer; HTML-only)
+#   - reveal: per-step-at-sentence  (iterations layout, intra-slide)
+#   - reveal: per-item-at-sentence  (enumeration layout, intra-slide)
+#
+# Topic: AI prompt iteration as a discipline. 6 slides.
+# Used as the v2 self-test for unexercised primitives.
+
+slides:
+
+  - layout: title
+    section: intro
+    badge: { text: "PROMPTING", color: purple }
+    title: "How an AI Refines <span class='highlight-purple'>Itself</span>"
+    subtitle: "Iterations as a discipline."
+    narration: "Most people write a prompt once and read what comes back. There is a sharper move."
+
+  - layout: hook
+    section: intro
+    heading: "What if the AI <span class='highlight-orange'>improved its own prompt</span>?"
+    subtitle: "Five rounds. One message. Convergence built in."
+    narration: "What if the AI improved its own prompt? Five rounds, one message, with a convergence rule built in."
+
+  - layout: iterations
+    section: iterations
+    badge: { text: "WHAT IT LOOKS LIKE", color: purple }
+    heading: "The AI walks the prompt forward, <span class='highlight-purple'>step by step</span>:"
+    color: purple
+    info_panel:
+      topic: iterations
+      html: |
+        <h3>Iterations &mdash; deeper</h3>
+        <p><strong>What it is:</strong> You give the AI an initial prompt and ask it to improve, criticize, and revise across multiple rounds. Each round is one self-feedback cycle.</p>
+        <p><strong>Convergence rule:</strong> "Stop when two consecutive rounds find nothing to improve." This prevents wasted iterations.</p>
+        <p><strong>Why the trail matters:</strong> The improvement steps are often more valuable than the final prompt &mdash; they teach you prompt-design patterns over time.</p>
+        <p><strong>Pairs with:</strong> meta-prompting (let AI write the first draft), prompt-as-spec (treat prompt like code review).</p>
+    reveal: per-step-at-sentence
+    steps:
+      - num: "Iteration 1"
+        finding: "Finding: tone, audience, scope all unspecified."
+        result: "Improve my text <strong>for a professional audience</strong>. Correct spelling, improve phrasing for <strong>clarity</strong>, neutral tone."
+      - num: "Iteration 3"
+        finding: "Finding: ambiguous passages handled implicitly."
+        result: "Preserve the original structure. <strong>Flag ambiguous passages</strong> rather than guessing intent."
+      - num: "Iteration 5 — Converged"
+        finding: "No meaningful improvement found. Done."
+        result: "From twelve vague words to a precise reusable editing prompt &mdash; automatically."
+    narration: |
+      Here is what one iteration loop looks like.
+      Iteration one: the AI catches that tone, audience, and scope were never specified, and adds them.
+      Iteration three: it notices ambiguous passages were being silently guessed. It adds an explicit flag-instead-of-guess instruction.
+      Iteration five: nothing left to improve. The convergence rule fires. Twelve vague words became a reusable editing prompt.
+
+  - layout: enumeration
+    section: structure
+    badge: { text: "PARAMETERS", color: blue }
+    heading: "What you control, <span class='highlight-blue'>parameter by parameter</span>:"
+    intro: "Each one is one phrase in the meta-prompt:"
+    columns: 2
+    color: blue
+    reveal:
+      mode: per-item-at-sentence
+    items:
+      - { num: 1, name: "Round count",   desc: "5 to 10 is the sweet spot. More is rarely better." }
+      - { num: 2, name: "Exit rule",     desc: '"Stop when two rounds find nothing to improve."' }
+      - { num: 3, name: "Focus axis",    desc: "Clarity, specificity, tone, structure — pick one." }
+      - { num: 4, name: "Scope guard",   desc: '"Preserve the original structure unless restructuring substantially improves it."' }
+    narration: |
+      You control four parameters when you set up an iteration loop.
+      One: the round count. Five to ten is the sweet spot.
+      Two: the exit rule. Two consecutive non-improving rounds means done.
+      Three: the focus axis. Clarity, specificity, tone, or structure — pick one or the loop drifts.
+      Four: the scope guard. Tell the AI when not to restructure, or it will try to rewrite everything.
+
+  - layout: recap
+    section: closing
+    heading: "What you actually have, after one message:"
+    items:
+      - { strong: "A converged prompt", color: purple, body: "ready to reuse, scoped to your task." }
+      - { strong: "An improvement trail", color: blue,  body: "what changed at each step, and why." }
+      - { strong: "A reusable pattern", color: green, body: "this loop works on any text, not just prompts." }
+    arrows: true
+    closing: "Try the same loop on a draft email or a meeting summary. The pattern carries."
+    narration: "After one message you have three things. A converged prompt, ready to reuse. An improvement trail, useful as documentation. And a pattern that works on any text — try it on a draft email next."
+
+  - layout: title
+    section: closing
+    badge: { text: "DO THIS", color: green }
+    title: "<span class='highlight-green'>Iterate</span> the next prompt you write."
+    subtitle: "One message. Five rounds. Watch what changes."
+    narration: "Iterate the next prompt you write. One message. Five rounds. Watch what changes."
